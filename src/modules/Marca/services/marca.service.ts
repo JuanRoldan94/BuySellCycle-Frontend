@@ -12,11 +12,11 @@ export const createMarca = async (data: { nombre: string }) => {
 };
 
 export const deleteMarca = async (id: number) => {
-    const response = await api.delete(`/marcas/id${id}`);
+    const response = await api.delete(`/marcas/${id}`);
     return response.data;
 }
 
 export const updateMarca = async (id: number, data: { nombre: string}) => {
-    const response = await api.patch(`/marcas/id${id}`, data);
+    const response = await api.patch(`/marcas/${id}`, data);
     return response.data;
 }

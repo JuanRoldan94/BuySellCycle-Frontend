@@ -17,7 +17,7 @@ export const MarcaView: React.FC = () => {
 
     const { data, isLoading } = useQuery({
         queryKey: ['marcas'],
-        queryFn: getMarcas, 
+        queryFn: getMarcas,
     });
 
     const deleteMutation = useMutation({
@@ -56,10 +56,10 @@ export const MarcaView: React.FC = () => {
             width: 150,
             render: (_, record) => (
                 <Space size="middle">
-                    <Button 
-                        type="text" 
-                        style={{ color: '#1890ff' }} 
-                        icon={<EditOutlined />} 
+                    <Button
+                        type="text"
+                        style={{ color: '#1890ff' }}
+                        icon={<EditOutlined />}
                         onClick={() => handleOpenEdit(record)}
                     />
 
@@ -69,9 +69,9 @@ export const MarcaView: React.FC = () => {
                         onConfirm={() => deleteMutation.mutate(record.id)}
                         okText="Si, eliminar"
                         cancelText="Cancelar"
-                    />
-
-                    <Button type="text" danger icon={<DeleteOutlined/>} />
+                    >
+                        <Button type="text" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -79,7 +79,7 @@ export const MarcaView: React.FC = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16}}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Title level={3} style={{ margin: 0 }}>Gestion de Marcas</Title>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreate}>
                     NuevaMarca
@@ -87,14 +87,14 @@ export const MarcaView: React.FC = () => {
             </div>
 
             <Table
-                columns = {columns}
+                columns={columns}
                 dataSource={data}
                 rowKey="id"
                 loading={isLoading}
                 bordered
             />
 
-            <MarcaFormModal 
+            <MarcaFormModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 marcaToEdit={marcaToEdit}
