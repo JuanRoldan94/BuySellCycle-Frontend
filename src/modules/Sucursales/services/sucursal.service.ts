@@ -20,3 +20,13 @@ export const deleteSucursal = async (id: number) => {
   const response = await api.delete(`/sucursales/${id}`);
   return response.data;
 };
+
+export const getProvincias = async () => {
+  const response = await api.get('/provincias');
+  return response.data;
+}
+
+export const getLocalidades = async () => {
+  const response = await api.get('/localidades');
+  return response.data;
+}
