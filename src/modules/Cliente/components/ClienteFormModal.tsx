@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Row, Col, message } from 'antd';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createCliente, updateCliente } from '../services/cliente.service';
+import { Modal, Form, Input, Row, Col, message, Select } from 'antd';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { createCliente, getProvincias, updateCliente, getLocalidades } from '../services/cliente.service';
 import type { Cliente } from '../types/cliente.type';
 
 interface ClienteFormModalProps {
@@ -13,6 +13,20 @@ interface ClienteFormModalProps {
 export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({ isOpen, onClose, clienteToEdit }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+
+  const { data: provincias, isLoading: loadingProv } = useQuery({
+    queryKey: ['provincias'],
+    queryFn: getProvincias,
+    enabled: isOpen
+  });
+
+  const { data: localidades, isLoading: loadingLoc } = useQuery({
+    queryKey: ['localidades'],
+    queryFn: getLocalidades,
+    enabled: isOpen
+  });
+
+  const provinciaSeleccionada = Form.useWatch('provinciaId', form);
 
   useEffect(() => {
     if (clienteToEdit && isOpen) {
@@ -48,10 +62,16 @@ export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({ isOpen, onCl
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
+      const payload = {
+        ...values,
+        provinciaId: Number(values.provinciaId),
+        localidadId: Number(values.localidadId),
+      };
+
       if (clienteToEdit) {
-        updateMutation.mutate({ id: clienteToEdit.id, data: values });
+        updateMutation.mutate({ id: clienteToEdit.id, data: payload });
       } else {
-        createMutation.mutate(values);
+        createMutation.mutate(payload);
       }
     });
   };
@@ -80,24 +100,42 @@ export const ClienteFormModal: React.FC<ClienteFormModalProps> = ({ isOpen, onCl
             </Form.Item>
           </Col>
         </Row>
+
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="dni" label="DNI / CUIT">
+            <Form.Item name="dni" label="DNI / CUIT" rules={[{ required: true, message: 'Requerido' }]}>
               <Input placeholder="Ej: 20345678901" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="telefono" label="Teléfono">
-              <Input placeholder="Ej: 3492-151234" />
+            <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Requerido' }, { type: 'email', message: 'Email inválido' }]}>
+              <Input placeholder="Ej: juan.perez@email.com" />
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item name="email" label="Email" rules={[{ type: 'email', message: 'Email inválido' }]}>
-          <Input placeholder="Ej: juan.perez@email.com" />
-        </Form.Item>
-        <Form.Item name="direccion" label="Dirección">
-          <Input placeholder="Ej: Av. Santa Fe 1234" />
-        </Form.Item>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="provinciaId" label="Provincia" rules={[{ required: true, message: 'Requerido' }]}>
+              <Select loading={loadingProv} placeholder="Seleccione provincia">
+                {provincias?.map((p: any) => (
+                  <Select.Option key={p.id} value={p.id}>{p.nombre}</Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="localidadId" label="Localidad" rules={[{ required: true, message: 'Requerido' }]}>
+              <Select loading={loadingLoc} placeholder="Seleccione localidad" disabled={!provinciaSeleccionada}>
+                {localidades
+                  ?.filter((l: any) => l.provinciaId === provinciaSeleccionada)
+                  .map((l: any) => (
+                    <Select.Option key={l.id} value={l.id}>{l.nombre}</Select.Option>
+                  ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
       </Form>
     </Modal>
   );
