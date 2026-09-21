@@ -15,7 +15,6 @@ export const UsuarioFormModal: React.FC<UsuarioFormModalProps> = ({ isOpen, onCl
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  // Traemos las sucursales para el selector
   const { data: sucursales, isLoading: isLoadingSucursales } = useQuery({
     queryKey: ['sucursales'],
     queryFn: getSucursales,
@@ -24,7 +23,6 @@ export const UsuarioFormModal: React.FC<UsuarioFormModalProps> = ({ isOpen, onCl
 
   useEffect(() => {
     if (usuarioToEdit && isOpen) {
-      // Si editamos, normalmente no se envía el password a menos que se quiera cambiar
       form.setFieldsValue(usuarioToEdit);
     } else if (!isOpen) {
       form.resetFields();
@@ -57,12 +55,22 @@ export const UsuarioFormModal: React.FC<UsuarioFormModalProps> = ({ isOpen, onCl
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
-      if (usuarioToEdit) {
-        updateMutation.mutate({ id: usuarioToEdit.id, data: values });
-      } else {
-        createMutation.mutate(values);
+      const payload = { ...values };
+
+      if (payload.rol) {
+        payload.rol = payload.rol.charAt(0).toUpperCase() + payload.rol.slice(1).toLowerCase();
       }
-    });
+
+      if (payload.sucursalId) {
+        payload.sucursalId = Number(payload.sucursalId);
+      }
+
+      if (usuarioToEdit) {
+        updateMutation.mutate({ id: usuarioToEdit.id, data: payload })
+      } else {
+        createMutation.mutate(payload);
+      }
+    })
   };
 
   return (
@@ -76,27 +84,34 @@ export const UsuarioFormModal: React.FC<UsuarioFormModalProps> = ({ isOpen, onCl
       cancelText="Cancelar"
     >
       <Form form={form} layout="vertical">
-        <Form.Item name="nombre" label="Nombre Completo" rules={[{ required: true, message: 'Requerido' }]}>
-          <Input placeholder="Ej: Juan Pérez" autoFocus />
-        </Form.Item>
-        
-        <Form.Item name="email" label="Correo Electrónico" rules={[{ required: true, type: 'email', message: 'Email inválido' }]}>
-          <Input placeholder="Ej: juan@empresa.com" />
+        <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Nombre Requerido' }]}>
+          <Input placeholder="Ej: Juan" autoFocus />
         </Form.Item>
 
-        <Form.Item 
+        <Form.Item name="apellido" label="Apellido" rules={[{ required: true, message: 'Apellido Reqerido' }]}>
+          <Input placeholder="Ej: Pérez" />
+        </Form.Item>
+
+        <Form.Item name="nombreUsuario" label="Nombre de Usuario" rules={[{ required: true, message: 'Nombre de Usuario Requerido' }]}>
+          <Input placeholder="Ej: JuanPerez" />
+        </Form.Item>
+
+        <Form.Item name="dni" label="DNI" rules={[{ required: true, message: 'DNI Requerido' }]}>
+          <Input placeholder="Ej: 12345678" />
+        </Form.Item>
+
+        {/* <Form.Item 
           name="password" 
           label={usuarioToEdit ? "Nueva Contraseña (dejar en blanco para mantener actual)" : "Contraseña"} 
           rules={[{ required: !usuarioToEdit, message: 'Requerido' }]}
         >
           <Input.Password placeholder="******" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item name="rol" label="Rol del Usuario" rules={[{ required: true, message: 'Requerido' }]}>
           <Select placeholder="Seleccione un rol">
-            <Select.Option value="ADMIN">Administrador</Select.Option>
-            <Select.Option value="VENDEDOR">Vendedor</Select.Option>
-            <Select.Option value="DEPOSITO">Encargado de Depósito</Select.Option>
+            <Select.Option value="Administracion">Administracion</Select.Option>
+            <Select.Option value="Vendedor">Vendedor</Select.Option>
           </Select>
         </Form.Item>
 

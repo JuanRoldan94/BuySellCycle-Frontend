@@ -34,17 +34,25 @@ export const UsuarioView: React.FC = () => {
   const handleOpenEdit = (record: Usuario) => { setUsuarioToEdit(record); setIsModalOpen(true); };
 
   const columns: ColumnsType<Usuario> = [
-    { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-    { 
-      title: 'Rol', 
-      dataIndex: 'rol', 
-      key: 'rol',
-      render: (rol) => <Tag color={rol === 'ADMIN' ? 'red' : 'blue'}>{rol}</Tag>
+    {
+      title: 'Nombre',
+      key: 'nombreCompleto',
+      render: (_, record) => `${record.nombre} ${record.apellido}`
     },
-    { 
-      title: 'Sucursal', 
-      key: 'sucursal', 
+    {
+      title: 'Nombre de usuario',
+      dataIndex: 'nombreUsuario',
+      key: 'nombreUsuario'
+    },
+    {
+      title: 'Rol',
+      dataIndex: 'rol',
+      key: 'rol',
+      render: (rol) => <Tag color={rol === 'Administracion' ? 'red' : 'blue'}>{rol}</Tag>
+    },
+    {
+      title: 'Sucursal',
+      key: 'sucursal',
       render: (_, record) => record.sucursal?.nombre || 'Sin asignar'
     },
     {

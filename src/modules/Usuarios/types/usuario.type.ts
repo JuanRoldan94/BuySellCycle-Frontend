@@ -1,7 +1,7 @@
 export interface Usuario {
   id: number;
   nombre: string;
-  email: string;
+  apellido: string;
   rol: string;
   sucursalId: number;
   archivado: boolean;
