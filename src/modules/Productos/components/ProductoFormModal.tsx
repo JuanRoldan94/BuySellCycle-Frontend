@@ -3,8 +3,6 @@ import { Modal, Form, Input, InputNumber, Select, message, Row, Col } from 'antd
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { createProducto, updateProducto } from '../services/producto.service';
 import type { Producto } from '../types/producto.type';
-
-// Importamos los servicios de los otros módulos para poblar los selectores
 import { getMarcas } from '../../Marca/services/marca.service';
 import { getJerarquiaCategorias } from '../../Categoria/services/categoria.service';
 
@@ -68,10 +66,19 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
+      const payload = {
+        nombre: values.nombre,
+        marcaId: Number(values.marcaId),
+        categoriaNivel2Id: Number(values.categoriaNivel2Id),
+        costoNeto: Number(values.costoNeto),
+        utilidadPorcentaje: Number(values.utilidadPorcentaje),
+        porcentajeDescuentoContado: Number(values.porcentajeDescuentoContado)
+      };
+
       if (productoToEdit) {
-        updateMutation.mutate({ id: productoToEdit.id, data: values });
+        updateMutation.mutate({ id: productoToEdit.id, data: payload });
       } else {
-        createMutation.mutate(values);
+        createMutation.mutate(payload);
       }
     });
   };
@@ -89,7 +96,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     >
       <Form form={form} layout="vertical">
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
               name="nombre"
               label="Nombre del producto"
@@ -98,6 +105,9 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
               <Input placeholder="Ej: Bicicleta Mountain Bike R29" autoFocus />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="marcaId"
@@ -110,15 +120,12 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                 showSearch
                 optionFilterProp="children"
               >
-                {marcas?.map(marca => (
+                {marcas?.map((marca: any) => (
                   <Select.Option key={marca.id} value={marca.id}>{marca.nombre}</Select.Option>
                 ))}
               </Select>
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="categoriaNivel2Id"
@@ -130,7 +137,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                 loading={isLoadingCategorias}
                 showSearch
               >
-                {categorias?.map(catN1 => (
+                {categorias?.map((catN1: any) => (
                   <Select.OptGroup key={`g-${catN1.id}`} label={catN1.nombre}>
                     {catN1.children?.map((catN2: any) => (
                       <Select.Option key={catN2.id} value={catN2.id}>
@@ -142,27 +149,13 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item
-              name="stockTotal"
-              label="Stock Inicial"
-              rules={[{ required: true, message: 'Requerido' }]}
-              tooltip={productoToEdit ? "El stock solo se modifica desde Movimientos" : ""}
-            >
-              <InputNumber 
-                style={{ width: '100%' }} 
-                min={0} 
-                disabled={!!productoToEdit} 
-              />
-            </Form.Item>
-          </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="precioLista"
-              label="Precio de Lista ($)"
+              name="costoNeto"
+              label="Costo Neto ($)"
               rules={[{ required: true, message: 'Requerido' }]}
             >
               <InputNumber 
@@ -172,27 +165,34 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              name="precioContado"
-              label="Precio Contado ($)"
+              name="utilidadPorcentaje"
+              label="Utilidad (%)"
               rules={[{ required: true, message: 'Requerido' }]}
             >
               <InputNumber 
                 style={{ width: '100%' }} 
                 min={0}
-                formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                formatter={value => `${value}%`}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              name="porcentajeDescuentoContado"
+              label="Desc. Contado (%)"
+              rules={[{ required: true, message: 'Requerido' }]}
+            >
+              <InputNumber 
+                style={{ width: '100%' }} 
+                min={0}
+                max={100}
+                formatter={value => `${value}%`}
               />
             </Form.Item>
           </Col>
         </Row>
-
-        <Form.Item
-          name="descripcion"
-          label="Descripción (Opcional)"
-        >
-          <Input.TextArea rows={3} placeholder="Detalles técnicos, colores disponibles..." />
-        </Form.Item>
       </Form>
     </Modal>
   );
