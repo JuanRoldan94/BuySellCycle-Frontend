@@ -43,15 +43,15 @@ export const PresupuestoView: React.FC = () => {
 
     setCarrito((prev) => {
       const existe = prev.find((item) => item.productoId === values.productoId);
-      
+
       if (existe) {
-        return prev.map((item) => 
-          item.productoId === values.productoId 
-            ? { 
-                ...item, 
-                cantidad: item.cantidad + values.cantidad,
-                subtotal: (item.cantidad + values.cantidad) * item.precioUnitario
-              }
+        return prev.map((item) =>
+          item.productoId === values.productoId
+            ? {
+              ...item,
+              cantidad: item.cantidad + values.cantidad,
+              subtotal: (item.cantidad + values.cantidad) * Number(productoDb.precioLista)
+            }
             : item
         );
       } else {
@@ -60,8 +60,8 @@ export const PresupuestoView: React.FC = () => {
           codigo: productoDb.codigo,
           nombre: productoDb.nombre,
           cantidad: values.cantidad,
-          precioUnitario: productoDb.precioLista, 
-          subtotal: values.cantidad * productoDb.precioLista
+          precioUnitario: productoDb.precioLista,
+          subtotal: values.cantidad * Number(productoDb.precioLista)
         }];
       }
     });
@@ -80,7 +80,7 @@ export const PresupuestoView: React.FC = () => {
     const payload = {
       clienteId,
       sucursalId: 1,
-      detalles: carrito.map((item) => ({
+      items: carrito.map((item) => ({
         productoId: item.productoId,
         cantidad: item.cantidad,
         precioUnitario: item.precioUnitario
@@ -112,14 +112,14 @@ export const PresupuestoView: React.FC = () => {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       <Title level={3} style={{ marginBottom: 24 }}><ShoppingCartOutlined /> Nuevo Presupuesto</Title>
-      
+
       <Row gutter={24}>
         <Col xs={24} lg={8}>
           <Card title="1. Datos Generales" size="small" style={{ marginBottom: 16 }}>
             <div style={{ marginBottom: 16 }}>
               <Text strong>Cliente:</Text>
-              <Select 
-                style={{ width: '100%', marginTop: 8 }} 
+              <Select
+                style={{ width: '100%', marginTop: 8 }}
                 placeholder="Seleccione un cliente"
                 loading={loadingCli}
                 showSearch
@@ -139,7 +139,7 @@ export const PresupuestoView: React.FC = () => {
                   {productos?.map((p: any) => <Option key={p.id} value={p.id}>[{p.codigo}] {p.nombre}</Option>)}
                 </Select>
               </Form.Item>
-              
+
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item name="cantidad" label="Cantidad" rules={[{ required: true, message: 'Requerido' }]} initialValue={1}>
@@ -159,15 +159,15 @@ export const PresupuestoView: React.FC = () => {
         </Col>
 
         <Col xs={24} lg={16}>
-          <Card title="Detalle del Presupuesto" size="small" bodyStyle={{ padding: 0 }}>
-            <Table 
-              columns={columnasCarrito} 
-              dataSource={carrito} 
-              rowKey="productoId" 
-              pagination={false} 
+          <Card title="Detalle del Presupuesto" size="small" styles={{ body: { padding: 0 } }}>
+            <Table
+              columns={columnasCarrito}
+              dataSource={carrito}
+              rowKey="productoId"
+              pagination={false}
               locale={{ emptyText: 'No hay productos en el presupuesto' }}
             />
-            
+
             <div style={{ padding: '24px', background: '#fafafa', textAlign: 'right' }}>
               <Title level={4} style={{ margin: 0 }}>
                 Total: <span style={{ color: '#1890ff' }}>{formatearDinero(totalPresupuesto)}</span>
@@ -175,10 +175,10 @@ export const PresupuestoView: React.FC = () => {
               <Divider style={{ margin: '16px 0' }} />
               <Space>
                 <Button onClick={() => { setCarrito([]); setClienteId(null); }}>Cancelar</Button>
-                <Button 
-                  type="primary" 
-                  size="large" 
-                  icon={<SaveOutlined />} 
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<SaveOutlined />}
                   onClick={handleGenerarPresupuesto}
                   loading={presupuestoMutation.isPending}
                   disabled={carrito.length === 0 || !clienteId}
