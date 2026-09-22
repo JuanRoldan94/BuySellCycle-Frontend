@@ -8,6 +8,7 @@ import { UsuarioView } from './modules/Usuarios/views/Usuario.view';
 import { StockView } from './modules/Stock/views/stock.view'
 import { PresupuestoView } from './modules/Presupuesto/view/presupuesto.view';
 import { ClienteView } from './modules/Cliente/views/Cliente.view';
+import { DepositoView } from './modules/Deposito/views/Deposito.view'
 
 const DashboardMock = () => <h2>Bienvenido al Dashboard</h2>;
 
@@ -24,6 +25,7 @@ function App() {
         <Route path="sucursales" element={<SucursalView />} />
         <Route path="usuarios" element={<UsuarioView />} />
         <Route path="presupuestos" element={<PresupuestoView />} />
+        <Route path="depositos" element={<DepositoView />} />
         <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />
       </Route>
     </Routes>
