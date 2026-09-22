@@ -46,7 +46,6 @@ export const ProductoView: React.FC = () => {
   };
 
   const columns: ColumnsType<Producto> = [
-    { title: 'Código', dataIndex: 'codigo', key: 'codigo', width: 100 },
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
     { 
       title: 'Marca', 

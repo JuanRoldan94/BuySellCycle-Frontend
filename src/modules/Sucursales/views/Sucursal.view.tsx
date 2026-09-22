@@ -36,8 +36,8 @@ export const SucursalView: React.FC = () => {
   const columns: ColumnsType<Sucursal> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
-    { title: 'Dirección', dataIndex: 'direccion', key: 'direccion' },
-    { title: 'Teléfono', dataIndex: 'telefono', key: 'telefono' },
+    { title: 'Provincia', dataIndex: 'provincia', key: 'provincia' },
+    { title: 'Localidad', dataIndex: 'localidad', key: 'localidad' },
     {
       title: 'Acciones',
       key: 'acciones',

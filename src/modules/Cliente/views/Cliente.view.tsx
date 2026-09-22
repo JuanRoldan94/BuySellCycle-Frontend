@@ -35,8 +35,7 @@ export const ClienteView: React.FC = () => {
 
   const columns: ColumnsType<Cliente> = [
     { title: 'Nombre', key: 'nombreCompleto', render: (_, record) => `${record.nombre} ${record.apellido}` },
-    { title: 'DNI / CUIT', dataIndex: 'dni', key: 'dni' },
-    { title: 'Teléfono', dataIndex: 'telefono', key: 'telefono' },
+    { title: 'DNI / CUIT', dataIndex: 'dni', key: 'dni' },  
     { title: 'Email', dataIndex: 'email', key: 'email' },
     {
       title: 'Acciones',
