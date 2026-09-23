@@ -109,7 +109,7 @@ export const CategoriaView: React.FC = () => {
                 />
                     <Popconfirm
                         title={`¿Eliminar ${record.isNivel2 ? 'sub-categoría' : 'categoría'}?`}
-                        description={`¿Estás seguro de archivar "${record.nombre}"?`}
+                        description={`¿Estás seguro de eliminar "${record.nombre}"?`}
                         onConfirm={() => {
                         if (record.isNivel2) {
                             deleteN2Mutation.mutate(record.id);
@@ -132,10 +132,10 @@ export const CategoriaView: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <Title level={3} style={{ margin: 0 }}>Gestión de Categorías</Title>
                 <Space>
-                    <Button icon={<PlusOutlined />} onClick={handleOpenCreateN2}>Nuevo Sub-nivel (N2)</Button>
+                    <Button icon={<PlusOutlined />} onClick={handleOpenCreateN2}>Nueva Sub-categoria</Button>
 
                     <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreateN1}>
-                        Nueva Categoría (N1)
+                        Nueva Categoría
                     </Button>
                 </Space>
             </div>

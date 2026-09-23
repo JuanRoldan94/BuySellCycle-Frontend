@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Select, message, Row, Col } from 'antd';
+import { Modal, Form, Input, InputNumber, Select, message, Row, Col, Divider } from 'antd';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { createProducto, updateProducto } from '../services/producto.service';
 import type { Producto } from '../types/producto.type';
 import { getMarcas } from '../../Marca/services/marca.service';
 import { getJerarquiaCategorias } from '../../Categoria/services/categoria.service';
+import { getDepositos } from '../../Deposito/services/deposito.service';
 
 interface ProductoFormModalProps {
   isOpen: boolean;
@@ -64,9 +65,15 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     },
   });
 
+  const { data: depositos, isLoading: isLoadingDepositos } = useQuery({
+    queryKey: ['depositos'],
+    queryFn: getDepositos,
+    enabled: isOpen && !productoToEdit, 
+  });
+
   const handleSubmit = () => {
     form.validateFields().then((values) => {
-      const payload = {
+      const payload:any = {
         nombre: values.nombre,
         marcaId: Number(values.marcaId),
         categoriaNivel2Id: Number(values.categoriaNivel2Id),
@@ -74,6 +81,13 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
         utilidadPorcentaje: Number(values.utilidadPorcentaje),
         porcentajeDescuentoContado: Number(values.porcentajeDescuentoContado)
       };
+
+      if (values.depositoId) {
+        payload.depositoId = Number(values.depositoId);
+      }
+      if (values.stockInicial) {
+        payload.stockInicial = Number(values.stockInicial);
+      }
 
       if (productoToEdit) {
         updateMutation.mutate({ id: productoToEdit.id, data: payload });
@@ -95,6 +109,34 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
       width={700} 
     >
       <Form form={form} layout="vertical">
+
+        {!productoToEdit && (
+          <>
+            <Divider>Stock Inicial (Opcional)</Divider>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="depositoId" label="Depósito Inicial">
+                  <Select placeholder="Seleccione un depósito" loading={isLoadingDepositos} allowClear>
+                    {depositos?.map((d: any) => (
+                      <Select.Option key={d.id} value={d.id}>{d.nombre}</Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="stockInicial" label="Cantidad Inicial">
+                  <InputNumber 
+                    min={1} 
+                    style={{ width: '100%' }} 
+                    placeholder="Ej: 50" 
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </>
+        )}
+
+        
         <Row gutter={16}>
           <Col span={24}>
             <Form.Item
