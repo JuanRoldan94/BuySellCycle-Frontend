@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { registrarIngreso, registrarEgreso, registrarTransferencia } from '../services/stock.service';
 import { getProductos } from '../../Productos/services/producto.service';
 import { getDepositos } from '../../Deposito/services/deposito.service';
+import { getProveedores } from '../../Proveedores/services/Proveedores.service';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -12,6 +13,7 @@ const { Option } = Select;
 export const StockView: React.FC = () => {
     const { data: productos, isLoading: loadingProd } = useQuery({ queryKey: ['productos'], queryFn: getProductos });
     const { data: depositos, isLoading: loadingDep } = useQuery({ queryKey: ['depositos'], queryFn: getDepositos });
+    const { data: proveedores, isLoading: loadingProv } = useQuery({ queryKey: ['proveedores'], queryFn: getProveedores });
     const [formIngreso] = Form.useForm();
     const [formEgreso] = Form.useForm();
     const [formTransferencia] = Form.useForm();
@@ -50,7 +52,7 @@ export const StockView: React.FC = () => {
             children: (
                 <Form form={formIngreso} layout="vertical" onFinish={(v) => ingresoMutation.mutate(v)}>
                     <Row gutter={16}>
-                        <Col span={12}>
+                        <Col span={6}>
                             <Form.Item name="productoId" label="Producto" rules={[{ required: true }]}>
                                 <Select showSearch optionFilterProp="children" loading={loadingProd} placeholder="Buscar producto...">
                                     {productos?.map((p: any) => <Option key={p.id} value={p.id}>[{p.codigo}] {p.nombre}</Option>)}
@@ -66,16 +68,23 @@ export const StockView: React.FC = () => {
                         </Col>
                     </Row>
                     <Row gutter={16}>
-                        <Col span={8}>
+                        <Col span={6}>
                             <Form.Item name="cantidad" label="Cantidad" rules={[{ required: true }]}>
                                 <InputNumber min={1} style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
-                        <Col span={16}>
-                            <Form.Item name="motivo" label="Motivo / Observación" rules={[{ required: true }]}>
-                                <Input placeholder="Ej: Compra a proveedor, Devolución..." />
+                        <Col span={9}>
+                            <Form.Item name="proveedorId" label="Proveedor (Opcional)">
+                                <Select showSearch optionFilterProp="children" loading={loadingProv} placeholder="Seleccionar..." allowClear>
+                                    {proveedores?.map((p: any) => <Option key={p.id} value={p.id}>{p.razonSocial}</Option>)}
+                                </Select>
                             </Form.Item>
                         </Col>
+                        {/* <Col span={9}>
+                            <Form.Item name="motivo" label="Motivo / Observación" rules={[{ required: true }]}>
+                                <Input placeholder="Ej: Compra a proveedor..." />
+                            </Form.Item>
+                        </Col> */}
                     </Row>
                     <Button type="primary" htmlType="submit" loading={ingresoMutation.isPending} style={{ background: '#52c41a' }}>
                         Registrar Ingreso
