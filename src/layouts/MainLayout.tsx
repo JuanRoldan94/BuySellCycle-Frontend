@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Menu, theme } from 'antd';
 import {
-  AppstoreOutlined,
+  // AppstoreOutlined,
   TagsOutlined,
   PartitionOutlined,
   UserOutlined,
@@ -23,7 +23,7 @@ export const MainLayout: React.FC = () => {
   } = theme.useToken();
 
   const menuItems = [
-    { key: '/', icon: <AppstoreOutlined />, label: 'Dashboard' },
+    // { key: '/', icon: <AppstoreOutlined />, label: 'Dashboard' },
     { key: '/marcas', icon: <TagsOutlined />, label: 'Marcas' },
     { key: '/productos', icon: <TagsOutlined />, label: 'Productos' },
     { key: '/stock', icon: <RetweetOutlined />, label: 'Movimientos Stock' },

@@ -85,8 +85,8 @@ export const CategoriaView: React.FC = () => {
             width: 150,
             render: (_, record) => (
                 record.isNivel2 
-                ? <Tag color="default">Nivel 2 (Sub)</Tag> 
-                : <Tag color="blue">Nivel 1 (Padre)</Tag>
+                ? <Tag color="default">Sub-Categoria</Tag> 
+                : <Tag color="blue">Categoria</Tag>
             )
         },
         {

@@ -10,7 +10,7 @@ const { Title } = Typography;
 
 interface Deposito {
   id: number;
-  codigo: string;
+  codigo?: string;
   nombre: string;
   provinciaId: number;
   localidadId: number;

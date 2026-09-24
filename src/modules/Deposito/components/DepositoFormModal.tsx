@@ -83,14 +83,14 @@ export const DepositoFormModal: React.FC<DepositoFormModalProps> = ({ isOpen, on
             >
             <Form form={form} layout="vertical">
                 <Row gutter={16}>
-                    <Form.Item name="codigo" label="Código" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Input placeholder="Ej: DEP-001" autoFocus />
-                    </Form.Item>
-                <Col span={12}>
-                    <Form.Item name="nombre" label="Nombre del Depósito" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Input placeholder="Ej: Depósito Central" />
-                    </Form.Item>
-                </Col>
+                    {/* <Form.Item name="codigo" label="Código" rules={[{ required: false, message: 'Requerido' }]}>
+                        <Input placeholder="Ej: DEP-001" autoFocus />
+                    </Form.Item> */}
+                    <Col span={12}>
+                        <Form.Item name="nombre" label="Nombre del Depósito" rules={[{ required: true, message: 'Requerido' }]}>
+                        <Input placeholder="Ej: Depósito Central" />
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 <Row gutter={16}>
