@@ -9,6 +9,7 @@ import { StockView } from './modules/Stock/views/stock.view'
 import { PresupuestoView } from './modules/Presupuesto/view/presupuesto.view';
 import { ClienteView } from './modules/Cliente/views/Cliente.view';
 import { DepositoView } from './modules/Deposito/views/Deposito.view';
+import { ProveedoresView } from './modules/Proveedores/views/Proveedores.view';
 
 const DashboardMock = () => <h2>Bienvenido al Dashboard</h2>;
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="clientes" element={<ClienteView />} />
         <Route path="marcas" element={<MarcaView />} />
         <Route path="productos" element={<ProductoView />} />
+        <Route path="proveedores" element={< ProveedoresView/>}/>
         <Route path="stock" element={<StockView />} />
         <Route path="categorias" element={<CategoriaView />} />
         <Route path="sucursales" element={<SucursalView />} />
