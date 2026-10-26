@@ -10,6 +10,7 @@ import { PresupuestoView } from './modules/Presupuesto/view/presupuesto.view';
 import { ClienteView } from './modules/Cliente/views/Cliente.view';
 import { DepositoView } from './modules/Deposito/views/Deposito.view';
 import { ProveedoresView } from './modules/Proveedores/views/Proveedores.view';
+import { NuevaVenta } from './modules/Ventas/views/NuevaVenta';
 
 const DashboardMock = () => <h2>Bienvenido al Dashboard</h2>;
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="usuarios" element={<UsuarioView />} />
         <Route path="presupuestos" element={<PresupuestoView />} />
         <Route path="depositos" element={<DepositoView />} />
+        <Route path="ventas" element={<NuevaVenta />} />
         <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />
       </Route>
     </Routes>

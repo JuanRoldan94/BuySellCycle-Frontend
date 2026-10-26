@@ -33,7 +33,8 @@ export const MainLayout: React.FC = () => {
     { key: '/categorias', icon: <PartitionOutlined />, label: 'Categorías' },
     { key: '/usuarios', icon: <UserOutlined />, label: 'Usuarios' },
     { key: '/depositos', icon: <ShopOutlined />, label: 'Depositos' },
-    { key: '/proveedores', icon: <UserOutlined />, label: 'Proveedores'}
+    { key: '/proveedores', icon: <UserOutlined />, label: 'Proveedores'},
+    { key: '/ventas', label: 'Ventas'}
   ];
 
   return (

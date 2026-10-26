@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProveedores, deleteProveedor } from '../services/Proveedores.service';
 import type { ColumnsType } from 'antd/es/table';
 import type { Proveedor } from '../types/proveedores.type';
-import { ProveedoresFormModal } from '../components/PRoveedoresFormModal';
+import { ProveedoresFormModal } from '../components/ProveedoresFormModal';
 
 const { Title } = Typography;
 
