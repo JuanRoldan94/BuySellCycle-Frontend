@@ -5,6 +5,7 @@ interface DetalleCarrito {
     nombre: string;
     precio: number;
     cantidad: number;
+    stockMaximo: number;
 }
 
 interface VentaState {
@@ -25,6 +26,7 @@ interface VentaState {
     setDireccionEntregaTexto: (direccion: string) => void;
     agregarProducto: (producto: DetalleCarrito) => void;
     removerProducto: (productoId: number) => void;
+    actualizarCantidad: (productoId: number, cantidad: number) => void;
     vaciarCarrito: () => void;
 }
 
@@ -59,7 +61,15 @@ export const useVentaStore = create<VentaState>((set) => ({
         }
         return { detalles: [...state.detalles, nuevoProducto] };
     }),
-
+    actualizarCantidad: (id, cantidad) => set((state) => ({
+        detalles: state.detalles.map(p => {
+            if (p.productoId === id) {
+                const cantidadValida = Math.min(Math.max(1, cantidad), p.stockMaximo);
+                return {...p, cantidad: cantidadValida};
+            }
+            return p;
+        })
+    })),
     removerProducto: (id) => set((state) => ({
         detalles: state.detalles.filter(p => p.productoId !== id)
     })),

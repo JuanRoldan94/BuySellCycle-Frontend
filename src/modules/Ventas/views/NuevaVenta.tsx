@@ -10,7 +10,7 @@ export const NuevaVenta = () => {
 
     const {
         detalles, clienteId, sucursalId, modoPago, planId, modoEntrega, tasaFinanciacion, direccionEntregaTexto,
-        removerProducto, vaciarCarrito,
+        removerProducto, vaciarCarrito, actualizarCantidad
     } = useVentaStore();
 
     const subtotal = detalles.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
@@ -92,7 +92,19 @@ export const NuevaVenta = () => {
                                         <tr key={item.productoId}>
                                             <td>{item.nombre}</td>
                                             <td>${item.precio}</td>
-                                            <td>{item.cantidad}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    className="form-control form-control-sm text-center"
+                                                    min="1"
+                                                    max={item.stockMaximo}
+                                                    value={item.cantidad}
+                                                    onChange={(e) => {
+                                                        const nuevaCant = parseInt(e.target.value, 10) || 1;
+                                                        actualizarCantidad(item.productoId, nuevaCant);
+                                                    }}
+                                                />
+                                            </td>
                                             <td>${item.precio * item.cantidad}</td>
                                             <td>
                                                 <button

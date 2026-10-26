@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useVentaStore } from '../store/useventaStore';
 
 interface ProductoBackend {
@@ -13,6 +13,9 @@ interface ProductoBackend {
 export const BuscadorProductos = () => {
     const [productos, setProductos] = useState<ProductoBackend[]>([]);
     const [busqueda, setBusqueda] = useState('');
+
+    const [mostrarMenu, setMostrarMenu] = useState(false);
+    const contenedorRef = useRef<HTMLDivElement>(null);
 
     const agregarProducto = useVentaStore((state) => state.agregarProducto);
     const detalles = useVentaStore((state) => state.detalles);
@@ -30,6 +33,18 @@ export const BuscadorProductos = () => {
             }
         };
         fetchProductos();
+    }, []);
+
+    useEffect(() => {
+        const handleClickFuera = (event: MouseEvent) => {
+            if (contenedorRef.current && !contenedorRef.current.contains(event.target as Node)) {
+                setMostrarMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickFuera);
+
+        return () => document.removeEventListener('mousedown', handleClickFuera);
     }, []);
 
     const productosFiltrados = productos
@@ -51,29 +66,38 @@ export const BuscadorProductos = () => {
             nombre: producto.nombre,
             precio: Number(producto.precioLista),
             cantidad: 1,
+            stockMaximo: producto.stockTotal,
         });
+
+        setMostrarMenu(false);
+        setBusqueda('');
     };
 
     return (
-        <div className="mb-4">
-            <div className="input-group mb-3">
+        <div className="mb-4 position-relative" ref={contenedorRef}>
+            <div className="input-group">
                 <span className="input-group-text bg-light">🔍</span>
                 <input
                     type="text"
                     className="form-control"
                     placeholder="Buscar bicicleta o repuesto por nombre..."
                     value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
+                    onChange={(e) => {
+                        setBusqueda(e.target.value);
+                        setMostrarMenu(true);
+                    }}
+                    onClick={() => setMostrarMenu(true)} 
+                    onFocus={() => setMostrarMenu(true)}
                 />
             </div>
 
-            {busqueda.trim() !== '' && (
-                <ul className="list-group shadow-sm position-absolute z-3 w-100" style={{ maxWidth: '95%' }}>
+            {mostrarMenu && busqueda.trim() !== '' && (
+                <ul className="list-group shadow-sm position-absolute z-3 w-100 mt-1">
                     {productosFiltrados.length === 0 ? (
                         <li className="list-group-item text-muted">No se encontraron productos con stock.</li>
                     ) : (
                         productosFiltrados.map((prod) => (
-                            <li key={prod.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            <li key={prod.id} className="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
                                 <div>
                                     <span className="fw-bold d-block">{prod.nombre}</span>
                                     <small className="text-muted">
