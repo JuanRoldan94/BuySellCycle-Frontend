@@ -9,6 +9,14 @@ interface VentaHistorial {
     modoPago: string;
     cliente: { nombre: string; apellido: string; dni: string };
     sucursal: { nombre: string };
+    detalles: {
+        id: number;
+        productoId: number;
+        cantidad: number;
+        precioUnitario: number;
+        subtotal: number;
+        producto: { nombre: string };
+    }[];
 }
 
 export const HistorialVentas = () => {
@@ -21,6 +29,9 @@ export const HistorialVentas = () => {
     const [ventaActiva, setVentaActiva] = useState<VentaHistorial | null>(null);
     const [nuevoEstado, setNuevoEstado] = useState('');
     const [actualizando, setActualizando] = useState(false);
+
+    const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
+    const [ventaDetalle, setVentaDetalle] = useState<VentaHistorial | null>(null);
 
     const cargarVentas = async () => {
         try {
@@ -55,6 +66,16 @@ export const HistorialVentas = () => {
         setVentaActiva(null);
     };
 
+    const abrirModalDetalle = (venta: VentaHistorial) => {
+        setVentaDetalle(venta);
+        setModalDetalleAbierto(true);
+    };
+
+    const cerrarModalDetalle = () => {
+        setModalDetalleAbierto(false);
+        setVentaDetalle(null);
+    };
+
     const handleGuardarEstado = async () => {
         if (!ventaActiva || nuevoEstado === ventaActiva.estado) {
             cerrarModal();
@@ -85,9 +106,9 @@ export const HistorialVentas = () => {
         } catch (error) {
             console.error('Error al actualizar', error);
         } finally {
-            setActualizando(false)
+            setActualizando(false);
         }
-    }
+    };
 
     const ventasFiltradas = ventas.filter((v) => {
         const termino = busqueda.toLowerCase();
@@ -140,7 +161,7 @@ export const HistorialVentas = () => {
                             <table className="table table-hover align-middle mb-0">
                                 <thead className="table-light">
                                     <tr>
-                                        <th className="px-3">#</th>
+                                        <th className="px-3">Id</th>
                                         <th>Fecha</th>
                                         <th>Cliente</th>
                                         <th>Sucursal</th>
@@ -179,6 +200,13 @@ export const HistorialVentas = () => {
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
+                                                    <button
+                                                        className='btn btn-sm btn-outline-info me-2'
+                                                        onClick={() => abrirModalDetalle(v)}
+                                                        title='Ver Productos'
+                                                    >
+                                                        Ver
+                                                    </button>
                                                     <button
                                                         className='btn btn-sm btn-outline-warning me-2'
                                                         onClick={() => abrirModal(v)}
@@ -242,6 +270,56 @@ export const HistorialVentas = () => {
                                 </button>
                                 <button className="btn btn-primary" onClick={handleGuardarEstado} disabled={actualizando}>
                                     {actualizando ? 'Guardando...' : 'Guardar Cambios'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {modalDetalleAbierto && ventaDetalle && (
+                <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content shadow">
+                            <div className="modal-header bg-light">
+                                <h5 className="modal-title">
+                                    Productos Comprados - Venta #{ventaDetalle.id}
+                                </h5>
+                                <button type="button" className="btn-close" onClick={cerrarModalDetalle}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="text-muted small mb-3">
+                                    Cliente: <strong>{ventaDetalle.cliente.nombre} {ventaDetalle.cliente.apellido}</strong>
+                                </p>
+
+                                <table className="table table-sm table-bordered align-middle mb-0">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th className="text-center">Cant.</th>
+                                            <th className="text-end">Precio Unit.</th>
+                                            <th className="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {ventaDetalle.detalles?.map((item, index) => (
+                                            <tr key={item.id || index}>
+                                                <td>{item.producto?.nombre || `Producto #${item.productoId}`}</td>
+                                                <td className="text-center">{item.cantidad}</td>
+                                                <td className="text-end">${Number(item.precioUnitario || 0).toFixed(2)}</td>
+                                                <td className="text-end fw-bold">${Number(item.subtotal || 0).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="text-end mt-3 fw-bold fs-5 text-success">
+                                    Total: ${Number(ventaDetalle.montoTotal || 0).toFixed(2)}
+                                </div>
+                            </div>
+                            <div className="modal-footer bg-light">
+                                <button className="btn btn-secondary" onClick={cerrarModalDetalle}>
+                                    Cerrar
                                 </button>
                             </div>
                         </div>

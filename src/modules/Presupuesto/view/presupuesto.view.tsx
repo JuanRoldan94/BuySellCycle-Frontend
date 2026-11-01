@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Select, Form, InputNumber, Button, Table, Typography, Space, message, Divider } from 'antd';
-import { ShoppingCartOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Select, Form, InputNumber, Button, Table, Typography, Space, message, Divider, Radio, Tag } from 'antd';
+import { ShoppingCartOutlined, DeleteOutlined, SaveOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
 import { getProductos } from '../../Productos/services/producto.service';
@@ -19,13 +19,61 @@ interface ItemCarrito {
   subtotal: number;
 }
 
+const getPlanes = async () => {
+  const res = await fetch('http://localhost:3000/planes');
+  if (!res.ok) throw new Error('Error al cargar los planes');
+  return res.json();
+};
+
 export const PresupuestoView: React.FC = () => {
   const [formAdd] = Form.useForm();
   const [clienteId, setClienteId] = useState<number | null>(null);
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
 
+  // Estados en cascada para el simulador de financiación
+  const [modoPago, setModoPago] = useState<'CONTADO' | 'PLAN'>('CONTADO');
+  const [tarjetaId, setTarjetaId] = useState<number | null>(null);
+  const [bancoId, setBancoId] = useState<number | null>(null);
+  const [planSeleccionadoId, setPlanSeleccionadoId] = useState<number | null>(null);
+
   const { data: productos, isLoading: loadingProd } = useQuery({ queryKey: ['productos'], queryFn: getProductos });
   const { data: clientes, isLoading: loadingCli } = useQuery({ queryKey: ['clientes'], queryFn: getClientes });
+  const { data: planes = [], isLoading: loadingPlanes } = useQuery({ queryKey: ['planes'], queryFn: getPlanes });
+
+  // Filtramos el plan de Contado (id 6) y planes archivados
+  const planesTarjeta = planes.filter((p: any) => p.id !== 6 && !p.archivado);
+
+  // 1. Extraemos las tarjetas únicas disponibles en los planes
+  const tarjetasDisponibles = Array.from(
+    new Map(
+      planesTarjeta
+        .filter((p: any) => p.tarjeta)
+        .map((p: any) => [p.tarjeta.id, p.tarjeta])
+    ).values()
+  ) as { id: number; nombre: string }[];
+
+  // 2. Extraemos los bancos disponibles según la tarjeta seleccionada
+  const bancosDisponibles = Array.from(
+    new Map(
+      planesTarjeta
+        .filter((p: any) => p.tarjeta?.id === tarjetaId && p.banco)
+        .map((p: any) => [p.banco.id, p.banco])
+    ).values()
+  ) as { id: number; nombre: string }[];
+
+  // 3. Filtramos los planes de cuotas según tarjeta y banco seleccionados
+  const planesFiltrados = planesTarjeta.filter(
+    (p: any) => p.tarjeta?.id === tarjetaId && p.banco?.id === bancoId
+  );
+
+  const planActivo = planesTarjeta.find((p: any) => p.id === planSeleccionadoId);
+
+  const limpiarFinanciacion = () => {
+    setModoPago('CONTADO');
+    setTarjetaId(null);
+    setBancoId(null);
+    setPlanSeleccionadoId(null);
+  };
 
   const presupuestoMutation = useMutation({
     mutationFn: createPresupuesto,
@@ -33,6 +81,7 @@ export const PresupuestoView: React.FC = () => {
       message.success('Presupuesto generado con éxito');
       setCarrito([]);
       setClienteId(null);
+      limpiarFinanciacion();
     },
     onError: (err: any) => message.error(err.response?.data?.message || 'Error al generar presupuesto')
   });
@@ -55,14 +104,17 @@ export const PresupuestoView: React.FC = () => {
             : item
         );
       } else {
-        return [...prev, {
-          productoId: productoDb.id,
-          codigo: productoDb.codigo,
-          nombre: productoDb.nombre,
-          cantidad: values.cantidad,
-          precioUnitario: productoDb.precioLista,
-          subtotal: values.cantidad * Number(productoDb.precioLista)
-        }];
+        return [
+          ...prev,
+          {
+            productoId: productoDb.id,
+            codigo: productoDb.codigo || `#${productoDb.id}`,
+            nombre: productoDb.nombre,
+            cantidad: values.cantidad,
+            precioUnitario: Number(productoDb.precioLista),
+            subtotal: values.cantidad * Number(productoDb.precioLista)
+          }
+        ];
       }
     });
 
@@ -90,8 +142,16 @@ export const PresupuestoView: React.FC = () => {
     presupuestoMutation.mutate(payload);
   };
 
-  const totalPresupuesto = carrito.reduce((acc, item) => acc + item.subtotal, 0);
-  const formatearDinero = (monto: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(monto);
+  // Cálculos del presupuesto y simulación de interés
+  const subtotalPresupuesto = carrito.reduce((acc, item) => acc + item.subtotal, 0);
+  const tasaInteres = modoPago === 'PLAN' && planActivo ? Number(planActivo.tasaFinanciacion || 0) : 0;
+  const recargoTarjeta = subtotalPresupuesto * (tasaInteres / 100);
+  const totalPresupuesto = subtotalPresupuesto + recargoTarjeta;
+  const cantidadCuotas = planActivo?.cuotas || planActivo?.cantidadCuotas || 1;
+  const valorCuota = cantidadCuotas > 0 ? totalPresupuesto / cantidadCuotas : totalPresupuesto;
+
+  const formatearDinero = (monto: number) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(monto || 0));
 
   const columnasCarrito = [
     { title: 'Código', dataIndex: 'codigo', key: 'codigo', width: 100 },
@@ -132,11 +192,11 @@ export const PresupuestoView: React.FC = () => {
             </div>
           </Card>
 
-          <Card title="2. Agregar Producto" size="small">
+          <Card title="2. Agregar Producto" size="small" style={{ marginBottom: 16 }}>
             <Form form={formAdd} layout="vertical" onFinish={handleAgregarAlCarrito}>
               <Form.Item name="productoId" label="Buscar Producto" rules={[{ required: true, message: 'Requerido' }]}>
                 <Select showSearch optionFilterProp="children" loading={loadingProd} placeholder="Tipee para buscar...">
-                  {productos?.map((p: any) => <Option key={p.id} value={p.id}>[{p.codigo}] {p.nombre}</Option>)}
+                  {productos?.map((p: any) => <Option key={p.id} value={p.id}>{p.nombre}</Option>)}
                 </Select>
               </Form.Item>
 
@@ -156,6 +216,107 @@ export const PresupuestoView: React.FC = () => {
               </Row>
             </Form>
           </Card>
+
+          {/* 3. SIMULADOR DE FINANCIACIÓN CON MENÚ EN CASCADA */}
+          <Card title={<span><CreditCardOutlined /> 3. Simular Financiación</span>} size="small">
+            <div style={{ marginBottom: modoPago === 'PLAN' ? 16 : 0 }}>
+              <Radio.Group
+                value={modoPago}
+                onChange={(e) => {
+                  setModoPago(e.target.value);
+                  if (e.target.value === 'CONTADO') {
+                    setTarjetaId(null);
+                    setBancoId(null);
+                    setPlanSeleccionadoId(null);
+                  }
+                }}
+                buttonStyle="solid"
+                style={{ width: '100%', display: 'flex' }}
+              >
+                <Radio.Button value="CONTADO" style={{ flex: 1, textAlign: 'center' }}>
+                  Sin Financiación
+                </Radio.Button>
+                <Radio.Button value="PLAN" style={{ flex: 1, textAlign: 'center' }}>
+                  Tarjeta / Plan
+                </Radio.Button>
+              </Radio.Group>
+            </div>
+
+            {modoPago === 'PLAN' && (
+              <div
+                style={{
+                  background: '#f8f9fa',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                {/* 1. Selector de Tarjeta */}
+                <div style={{ marginBottom: 12 }}>
+                  <Text style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Tarjeta</Text>
+                  <Select
+                    style={{ width: '100%' }}
+                    placeholder="1. Seleccione Tarjeta..."
+                    loading={loadingPlanes}
+                    value={tarjetaId}
+                    onChange={(val) => {
+                      setTarjetaId(val);
+                      setBancoId(null);
+                      setPlanSeleccionadoId(null);
+                    }}
+                  >
+                    {tarjetasDisponibles.map((t) => (
+                      <Option key={t.id} value={t.id}>
+                        {t.nombre}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+
+                {/* 2. Selector de Banco */}
+                <div style={{ marginBottom: 12 }}>
+                  <Text style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Banco</Text>
+                  <Select
+                    style={{ width: '100%' }}
+                    placeholder="2. Seleccione Banco..."
+                    disabled={!tarjetaId}
+                    value={bancoId}
+                    onChange={(val) => {
+                      setBancoId(val);
+                      setPlanSeleccionadoId(null);
+                    }}
+                  >
+                    {bancosDisponibles.map((b) => (
+                      <Option key={b.id} value={b.id}>
+                        {b.nombre}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+
+                {/* 3. Selector de Cuotas y Recargo */}
+                <div>
+                  <Text style={{ display: 'block', marginBottom: 4, fontSize: 13 }}>Cuotas y Recargo</Text>
+                  <Select
+                    style={{ width: '100%' }}
+                    placeholder="3. Seleccione Plan..."
+                    disabled={!bancoId}
+                    value={planSeleccionadoId}
+                    onChange={setPlanSeleccionadoId}
+                  >
+                    {planesFiltrados.map((plan: any) => {
+                      const cuotas = plan.cuotas || plan.cantidadCuotas || 1;
+                      return (
+                        <Option key={plan.id} value={plan.id}>
+                          {plan.nombre ? `${plan.nombre} - ` : ''}{cuotas} cuotas (+{Number(plan.tasaFinanciacion)}%)
+                        </Option>
+                      );
+                    })}
+                  </Select>
+                </div>
+              </div>
+            )}
+          </Card>
         </Col>
 
         <Col xs={24} lg={16}>
@@ -169,12 +330,44 @@ export const PresupuestoView: React.FC = () => {
             />
 
             <div style={{ padding: '24px', background: '#fafafa', textAlign: 'right' }}>
+              <div style={{ marginBottom: 8 }}>
+                <Text type="secondary" style={{ fontSize: 15 }}>
+                  Subtotal Productos: <strong>{formatearDinero(subtotalPresupuesto)}</strong>
+                </Text>
+              </div>
+
+              {modoPago === 'PLAN' && planActivo && (
+                <div style={{ marginBottom: 8 }}>
+                  <Text type="danger" style={{ fontSize: 15 }}>
+                    Recargo {planActivo.tarjeta?.nombre} {planActivo.banco?.nombre} (+{tasaInteres}%):{' '}
+                    <strong>+ {formatearDinero(recargoTarjeta)}</strong>
+                  </Text>
+                </div>
+              )}
+
               <Title level={4} style={{ margin: 0 }}>
                 Total: <span style={{ color: '#1890ff' }}>{formatearDinero(totalPresupuesto)}</span>
               </Title>
+
+              {modoPago === 'PLAN' && planActivo && (
+                <div style={{ marginTop: 8 }}>
+                  <Tag color="geekblue" style={{ fontSize: 14, padding: '4px 10px' }}>
+                    {cantidadCuotas} cuota{cantidadCuotas > 1 ? 's' : ''} de {formatearDinero(valorCuota)}
+                  </Tag>
+                </div>
+              )}
+
               <Divider style={{ margin: '16px 0' }} />
               <Space>
-                <Button onClick={() => { setCarrito([]); setClienteId(null); }}>Cancelar</Button>
+                <Button
+                  onClick={() => {
+                    setCarrito([]);
+                    setClienteId(null);
+                    limpiarFinanciacion();
+                  }}
+                >
+                  Cancelar
+                </Button>
                 <Button
                   type="primary"
                   size="large"
