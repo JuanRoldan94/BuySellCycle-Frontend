@@ -1,4 +1,4 @@
-import { useVentaStore } from '../store/useventaStore';
+import { useVentaStore } from '../store/useVentaStore';
 import { useNavigate } from 'react-router-dom';
 import { BuscadorProductos } from '../components/BuscadorProductos';
 import { SelectorCliente } from '../components/SelectorCliente';
@@ -34,7 +34,7 @@ export const NuevaVenta = () => {
             planId: modoPago === 'CONTADO' ? 6 : planId,
             modoPago,
             modoEntrega,
-            direccionEntregatexto: modoEntrega === 'ENTREGA_DOMICILIO' ? direccionEntregaTexto : null,
+            direccionEntregaTexto: modoEntrega === 'ENTREGA_DOMICILIO' ? direccionEntregaTexto : null,
             detalles: detalles.map(d => ({
                 productoId: d.productoId,
                 cantidad: d.cantidad

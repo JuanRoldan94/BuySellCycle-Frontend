@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useVentaStore } from '../store/useventaStore';
+import { useVentaStore } from '../store/useVentaStore';
 
 interface PlanBackend {
     id: number;

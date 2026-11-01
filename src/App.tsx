@@ -30,13 +30,13 @@ function App() {
         <Route path="usuarios" element={<UsuarioView />} />
         <Route path="presupuestos" element={<PresupuestoView />} />
         <Route path="depositos" element={<DepositoView />} />
-        <Route path="ventas" element={<NuevaVenta />} />
+        <Route path="ventas" element={<HistorialVentas />} />
 
         {/* Chequear la utilidad de las siguientes rutas antes de definirlas */}
         <Route path="/ventas/nueva" element={<NuevaVenta />} />
         <Route path="/ventas/historial" element={<HistorialVentas />} />
         <Route path="/ventas" element={<Navigate to="/ventas/historial" replace />} />
-        
+
 
         <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />
       </Route>

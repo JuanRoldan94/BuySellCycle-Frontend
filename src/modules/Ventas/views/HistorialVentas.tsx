@@ -17,22 +17,77 @@ export const HistorialVentas = () => {
     const [busqueda, setBusqueda] = useState('');
     const [cargando, setCargando] = useState(true);
 
-    useEffect(() => {
-        const fetchVentas = async () => {
-            try {
-                const res = await fetch('http://localhost:3000/ventas');
-                if (res.ok) {
-                    const data = await res.json();
-                    setVentas(data);
-                }
-            } catch (error) {
-                console.error('Error al cargar el historial:', error);
-            } finally {
-                setCargando(false);
+    const [modalAbierto, setModalAbierto] = useState(false);
+    const [ventaActiva, setVentaActiva] = useState<VentaHistorial | null>(null);
+    const [nuevoEstado, setNuevoEstado] = useState('');
+    const [actualizando, setActualizando] = useState(false);
+
+    const cargarVentas = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/ventas');
+            if (res.ok) {
+                const data = await res.json();
+                setVentas(data);
             }
-        };
-        fetchVentas();
+        } catch (error) {
+            console.error('Error al cargar el historial:', error);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarVentas();
     }, []);
+
+    const abrirModal = (venta: VentaHistorial) => {
+        if (venta.estado === 'CANCELADO') {
+            alert('Una venta cancelada no se puede modificar');
+            return;
+        }
+        setVentaActiva(venta);
+        setNuevoEstado(venta.estado);
+        setModalAbierto(true);
+    };
+
+    const cerrarModal = () => {
+        setModalAbierto(false);
+        setVentaActiva(null);
+    };
+
+    const handleGuardarEstado = async () => {
+        if (!ventaActiva || nuevoEstado === ventaActiva.estado) {
+            cerrarModal();
+            return;
+        }
+
+        if (nuevoEstado === 'CANCELADO') {
+            const confirmar = window.confirm('¿Cancelar venta? Esta accion no se puede deshacer');
+            if (!confirmar) return;
+        }
+
+        setActualizando(true);
+
+        try {
+            const res = await fetch(`http://localhost:3000/ventas/${ventaActiva.id}/estado`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: nuevoEstado }),
+            });
+
+            if (res.ok) {
+                await cargarVentas();
+                cerrarModal();
+            } else {
+                const error = await res.json();
+                alert(`Error: ${error.message}`);
+            }
+        } catch (error) {
+            console.error('Error al actualizar', error);
+        } finally {
+            setActualizando(false)
+        }
+    }
 
     const ventasFiltradas = ventas.filter((v) => {
         const termino = busqueda.toLowerCase();
@@ -117,13 +172,21 @@ export const HistorialVentas = () => {
                                                         {v.modoPago}
                                                     </span>
                                                 </td>
-                                                <td className="fw-bold">${v.montoTotal.toFixed(2)}</td>
+                                                <td className="fw-bold">${Number(v.montoTotal || 0).toFixed(2)}</td>
                                                 <td>
                                                     <span className={`badge ${getBadgeEstado(v.estado)}`}>
-                                                        {v.estado.replace(/_/g, ' ')}
+                                                        {v.estado ? v.estado.replace(/_/g, ' ') : 'SIN ESTADO'}
                                                     </span>
                                                 </td>
                                                 <td className="text-center">
+                                                    <button
+                                                        className='btn btn-sm btn-outline-warning me-2'
+                                                        onClick={() => abrirModal(v)}
+                                                        title='Cambiar Estado'
+                                                        disabled={v.estado === 'CANCELADO'}
+                                                    >
+                                                        ✏️
+                                                    </button>
                                                     <a
                                                         href={`http://localhost:3000/pdf/venta/${v.id}`}
                                                         target="_blank"
@@ -143,6 +206,48 @@ export const HistorialVentas = () => {
                     )}
                 </div>
             </div>
+
+            {modalAbierto && ventaActiva && (
+                <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content shadow">
+                            <div className="modal-header bg-light">
+                                <h5 className="modal-title">
+                                    Modificar Estado - Venta #{ventaActiva.id}
+                                </h5>
+                                <button type="button" className="btn-close" onClick={cerrarModal}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="text-muted small mb-3">
+                                    Cliente: <strong>{ventaActiva.cliente.nombre} {ventaActiva.cliente.apellido}</strong><br />
+                                    Total: <strong>${Number(ventaActiva.montoTotal || 0).toFixed(2)}</strong>
+                                </p>
+
+                                <label className="form-label fw-bold">Nuevo Estado:</label>
+                                <select
+                                    className="form-select"
+                                    value={nuevoEstado}
+                                    onChange={(e) => setNuevoEstado(e.target.value)}
+                                >
+                                    <option value="EN_PREPARACION">En Preparación</option>
+                                    <option value="EN_CAMINO">En Camino</option>
+                                    <option value="ENTREGADO">Entregado</option>
+                                    <hr />
+                                    <option value="CANCELADO" className="text-danger fw-bold">Cancelar Venta (Devuelve Stock)</option>
+                                </select>
+                            </div>
+                            <div className="modal-footer bg-light">
+                                <button className="btn btn-secondary" onClick={cerrarModal} disabled={actualizando}>
+                                    Cerrar
+                                </button>
+                                <button className="btn btn-primary" onClick={handleGuardarEstado} disabled={actualizando}>
+                                    {actualizando ? 'Guardando...' : 'Guardar Cambios'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

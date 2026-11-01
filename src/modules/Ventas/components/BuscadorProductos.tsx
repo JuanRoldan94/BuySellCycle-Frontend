@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useVentaStore } from '../store/useventaStore';
+import { useVentaStore } from '../store/useVentaStore';
 
 interface ProductoBackend {
     id: number;
