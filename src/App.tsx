@@ -20,24 +20,29 @@ function App() {
     <Routes>
       <Route element={<MainLayout />}>
         <Route index element={<DashboardMock />} />
+
+        {/* --- PERSONAS --- */}
         <Route path="clientes" element={<ClienteView />} />
-        <Route path="marcas" element={<MarcaView />} />
-        <Route path="productos" element={<ProductoView />} />
-        <Route path="proveedores" element={< ProveedoresView />} />
-        <Route path="stock" element={<StockView />} />
-        <Route path="categorias" element={<CategoriaView />} />
-        <Route path="sucursales" element={<SucursalView />} />
         <Route path="usuarios" element={<UsuarioView />} />
-        <Route path="presupuestos" element={<PresupuestoView />} />
+        <Route path="proveedores" element={<ProveedoresView />} />
+
+        {/* --- CATÁLOGO E INVENTARIO --- */}
+        <Route path="productos" element={<ProductoView />} />
+        <Route path="categorias" element={<CategoriaView />} />
+        <Route path="marcas" element={<MarcaView />} />
+        <Route path="stock" element={<StockView />} />
         <Route path="depositos" element={<DepositoView />} />
-        <Route path="ventas" element={<HistorialVentas />} />
 
-        {/* Chequear la utilidad de las siguientes rutas antes de definirlas */}
-        <Route path="/ventas/nueva" element={<NuevaVenta />} />
-        <Route path="/ventas/historial" element={<HistorialVentas />} />
-        <Route path="/ventas" element={<Navigate to="/ventas/historial" replace />} />
+        {/* --- COMERCIAL (Ventas y Presupuestos) --- */}
+        <Route path="presupuestos" element={<PresupuestoView />} />
+        <Route path="ventas" element={<Navigate to="/ventas/historial" replace />} />
+        <Route path="ventas/nueva" element={<NuevaVenta />} />
+        <Route path="ventas/historial" element={<HistorialVentas />} />
 
+        {/* --- ADMINISTRACIÓN --- */}
+        <Route path="sucursales" element={<SucursalView />} />
 
+        {/* 404 */}
         <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />
       </Route>
     </Routes>
