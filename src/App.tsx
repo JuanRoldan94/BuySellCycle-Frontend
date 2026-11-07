@@ -12,6 +12,7 @@ import { DepositoView } from './modules/Deposito/views/Deposito.view';
 import { ProveedoresView } from './modules/Proveedores/views/Proveedores.view';
 import { NuevaVenta } from './modules/Ventas/views/NuevaVenta';
 import { HistorialVentas } from './modules/Ventas/views/HistorialVentas';
+import { FinanciacionView } from './modules/Financiacion/views/Financiacion.view';
 
 const DashboardMock = () => <h2>Bienvenido al Dashboard</h2>;
 
@@ -41,6 +42,8 @@ function App() {
 
         {/* --- ADMINISTRACIÓN --- */}
         <Route path="sucursales" element={<SucursalView />} />
+
+        <Route path="/financiacion" element={<FinanciacionView />} />
 
         {/* 404 */}
         <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />

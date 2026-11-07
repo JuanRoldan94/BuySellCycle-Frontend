@@ -5,7 +5,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 
 import { getProductos } from '../../Productos/services/producto.service';
 import { getClientes } from '../../Cliente/services/cliente.service';
-import { createPDF } from '../services/presupuesto.service';
+import { createPDF, sendMailPresupuesto } from '../services/presupuesto.service';
+import { MailOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -91,6 +92,42 @@ export const PresupuestoView: React.FC = () => {
     },
     onError: (err: any) => message.error(err.response?.data?.message || 'Error al generar el PDF')
   });
+
+  const mailMutation = useMutation({
+    mutationFn: sendMailPresupuesto,
+    onSuccess: (res: any) => {
+      message.success(res.message);
+    },
+    onError: (err: any) => message.error(err.response?.data?.message || 'Error al enviar el mail')
+  });
+
+  const handleEnviarMail = () => {
+    if (!clienteId) return message.warning('Debe seleccionar un cliente');
+    if (carrito.length === 0) return message.warning('El presupuesto no tiene productos');
+
+    const payload = {
+      clienteId,
+      sucursalId: 1,
+      modoPago,
+      planId: modoPago === 'PLAN' ? planSeleccionadoId : null,
+      subtotal: subtotalPresupuesto,
+      tasaInteres,
+      recargo: recargoTarjeta,
+      total: totalPresupuesto,
+      cuotas: modoPago === 'PLAN' ? cantidadCuotas : 1,
+      valorCuota: modoPago === 'PLAN' ? valorCuota : totalPresupuesto,
+      items: carrito.map((item) => ({
+        productoId: item.productoId,
+        codigo: item.codigo,
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario,
+        subtotal: item.subtotal
+      }))
+    };
+
+    mailMutation.mutate(payload);
+  };
 
   const handleAgregarAlCarrito = (values: { productoId: number; cantidad: number }) => {
     const productoDb = productos?.find((p: any) => p.id === values.productoId);
@@ -349,6 +386,18 @@ export const PresupuestoView: React.FC = () => {
                 >
                   Cancelar
                 </Button>
+
+                <Button
+                  type='default'
+                  size='large'  
+                  icon={<MailOutlined />}
+                  onClick={handleEnviarMail}
+                  loading={mailMutation.isPending}
+                  disabled={carrito.length === 0 || !clienteId}
+                >
+                  Enviar por Mail
+                </Button>
+                
                 <Button
                   type="primary"
                   size="large"

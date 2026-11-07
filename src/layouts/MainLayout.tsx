@@ -10,7 +10,8 @@ import {
   TeamOutlined,
   AppstoreOutlined,
   ShoppingCartOutlined,
-  SettingOutlined
+  SettingOutlined,
+  CreditCardOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -69,7 +70,8 @@ export const MainLayout: React.FC = () => {
       children: [
         { key: '/sucursales', icon: <ShopOutlined />, label: 'Sucursales' },
       ],
-    }
+    },
+    { key: '/financiacion', icon: <CreditCardOutlined />, label: 'Financiacion' },
   ];
 
   const onOpenChange = (keys: string[]) => {
