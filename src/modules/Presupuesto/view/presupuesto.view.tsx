@@ -30,7 +30,6 @@ export const PresupuestoView: React.FC = () => {
   const [clienteId, setClienteId] = useState<number | null>(null);
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
 
-  // Estados en cascada para el simulador de financiación
   const [modoPago, setModoPago] = useState<'CONTADO' | 'PLAN'>('CONTADO');
   const [tarjetaId, setTarjetaId] = useState<number | null>(null);
   const [bancoId, setBancoId] = useState<number | null>(null);
@@ -71,21 +70,17 @@ export const PresupuestoView: React.FC = () => {
   const cantidadCuotas = planActivo?.cuotas || planActivo?.cantidadCuotas || 1;
   const valorCuota = cantidadCuotas > 0 ? totalPresupuesto / cantidadCuotas : totalPresupuesto;
 
-  // LÓGICA DE DESCARGA DIRECTA DEL PDF
   const pdfMutation = useMutation({
     mutationFn: createPDF,
     onSuccess: (data: any) => {
-      // 1. Creamos un objeto URL en la memoria del navegador usando el Blob que mandó el backend
       const url = window.URL.createObjectURL(new Blob([data], { type: 'application/pdf' }));
-      
-      // 2. Creamos un link <a> invisible y lo hacemos "clickear" automáticamente
+
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'presupuesto-simulacion.pdf'); // Nombre del archivo a descargar
+      link.setAttribute('download', 'presupuesto.pdf');
       document.body.appendChild(link);
       link.click();
-      
-      // 3. Limpiamos todo
+
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
 
@@ -107,10 +102,10 @@ export const PresupuestoView: React.FC = () => {
         return prev.map((item) =>
           item.productoId === values.productoId
             ? {
-                ...item,
-                cantidad: item.cantidad + values.cantidad,
-                subtotal: (item.cantidad + values.cantidad) * Number(productoDb.precioLista)
-              }
+              ...item,
+              cantidad: item.cantidad + values.cantidad,
+              subtotal: (item.cantidad + values.cantidad) * Number(productoDb.precioLista)
+            }
             : item
         );
       } else {
@@ -151,6 +146,7 @@ export const PresupuestoView: React.FC = () => {
       valorCuota: modoPago === 'PLAN' ? valorCuota : totalPresupuesto,
       items: carrito.map((item) => ({
         productoId: item.productoId,
+        nombre: item.nombre,
         cantidad: item.cantidad,
         precioUnitario: item.precioUnitario,
         subtotal: item.subtotal
@@ -181,7 +177,7 @@ export const PresupuestoView: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-      <Title level={3} style={{ marginBottom: 24 }}><ShoppingCartOutlined /> Simulación y Descarga de PDF</Title>
+      <Title level={3} style={{ marginBottom: 24 }}><ShoppingCartOutlined /> Descarga de PDF</Title>
 
       <Row gutter={24}>
         <Col xs={24} lg={8}>

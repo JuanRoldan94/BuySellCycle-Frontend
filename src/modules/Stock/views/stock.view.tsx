@@ -55,7 +55,7 @@ export const StockView: React.FC = () => {
                         <Col span={6}>
                             <Form.Item name="productoId" label="Producto" rules={[{ required: true }]}>
                                 <Select showSearch optionFilterProp="children" loading={loadingProd} placeholder="Buscar producto...">
-                                    {productos?.map((p: any) => <Option key={p.id} value={p.id}>[{p.codigo}] {p.nombre}</Option>)}
+                                    {productos?.map((p: any) => <Option key={p.id} value={p.id}>{p.nombre}</Option>)}
                                 </Select>
                             </Form.Item>
                         </Col>
