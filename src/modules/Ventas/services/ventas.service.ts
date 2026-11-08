@@ -28,3 +28,6 @@ export const getSucursalesParaVenta = async () => (await api.get('/sucursales'))
 
 export const getPlanesParaVenta = async () => (await api.get('/planes')).data;
 
+export const reenviarMailVenta = async (id: number) => (await api.post(`/mail/venta/${id}`)).data;
+
+

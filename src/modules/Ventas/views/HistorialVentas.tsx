@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getVentas, actualizarEstadoVenta } from '../services/ventas.service';
+import { getVentas, actualizarEstadoVenta, reenviarMailVenta } from '../services/ventas.service';
 
 interface VentaHistorial {
     id: number;
@@ -8,7 +8,7 @@ interface VentaHistorial {
     montoTotal: number;
     estado: string;
     modoPago: string;
-    cliente: { nombre: string; apellido: string; dni: string };
+    cliente: { nombre: string; apellido: string; dni: string; email?: string };
     sucursal: { nombre: string };
     detalles: {
         id: number;
@@ -33,6 +33,28 @@ export const HistorialVentas = () => {
 
     const [modalDetalleAbierto, setModalDetalleAbierto] = useState(false);
     const [ventaDetalle, setVentaDetalle] = useState<VentaHistorial | null>(null);
+    const [enviandoMailId, setEnviandoMailId] = useState<number | null>(null);
+
+    const handleReenviarMail = async (venta: VentaHistorial) => {
+        if (!venta.cliente?.email) {
+            alert(`El cliente ${venta.cliente.nombre} ${venta.cliente.apellido} no tiene un email registrado.`);
+            return;
+        }
+
+        const confirmar = window.confirm(`¿Reenviar comprobante por email a ${venta.cliente.email}?`);
+        if (!confirmar) return;
+
+        setEnviandoMailId(venta.id);
+        try {
+            const res = await reenviarMailVenta(venta.id);
+            alert(res.message || 'Email enviado con éxito');
+        } catch (error: any) {
+            console.error('Error al enviar email de venta:', error);
+            alert(`Error: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setEnviandoMailId(null);
+        }
+    };
 
     const cargarVentas = async () => {
         try {
@@ -208,11 +230,19 @@ export const HistorialVentas = () => {
                                                         href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/pdf/venta/${v.id}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="btn btn-sm btn-outline-danger"
+                                                        className="btn btn-sm btn-outline-danger me-2"
                                                         title="Descargar Comprobante"
                                                     >
                                                         PDF
                                                     </a>
+                                                    <button
+                                                        className="btn btn-sm btn-outline-primary"
+                                                        onClick={() => handleReenviarMail(v)}
+                                                        title="Reenviar comprobante por correo"
+                                                        disabled={enviandoMailId === v.id}
+                                                    >
+                                                        {enviandoMailId === v.id ? '⏳' : '✉️ Mail'}
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))
