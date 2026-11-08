@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Typography, Popconfirm, message, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Typography, Popconfirm, message, Tag, Image, Avatar } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, PictureOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProductos, deleteProducto } from '../services/producto.service';
 import type { ColumnsType } from 'antd/es/table';
@@ -46,6 +46,30 @@ export const ProductoView: React.FC = () => {
   };
 
   const columns: ColumnsType<Producto> = [
+    {
+      title: 'Imagen',
+      dataIndex: 'rutaImagenStorage',
+      key: 'imagen',
+      width: 75,
+      align: 'center',
+      render: (url, record) => url ? (
+        <Image
+          src={url}
+          alt={record.nombre}
+          width={45}
+          height={45}
+          style={{ objectFit: 'contain', borderRadius: 6, border: '1px solid #f0f0f0', padding: 2, background: '#fff' }}
+          fallback="https://placehold.co/45x45?text=Img"
+        />
+      ) : (
+        <Avatar
+          shape="square"
+          size={45}
+          icon={<PictureOutlined />}
+          style={{ backgroundColor: '#f5f5f5', color: '#bfbfbf', borderRadius: 6 }}
+        />
+      )
+    },
     { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
     { 
       title: 'Marca', 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Input, List, Button, Tag, Typography, message, Space } from 'antd';
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { Input, List, Button, Tag, Typography, message, Space, Avatar } from 'antd';
+import { SearchOutlined, PlusOutlined, PictureOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getProductosParaVenta } from '../services/ventas.service';
 
@@ -13,6 +13,7 @@ interface ProductoBackend {
     precioLista: number;
     precioContado: number;
     estado: string;
+    rutaImagenStorage?: string;
 }
 
 export const BuscadorProductos = () => {
@@ -135,6 +136,13 @@ export const BuscadorProductos = () => {
                                     ]}
                                 >
                                     <List.Item.Meta
+                                        avatar={
+                                            prod.rutaImagenStorage ? (
+                                                <Avatar shape="square" size={40} src={prod.rutaImagenStorage} style={{ objectFit: 'contain', background: '#fff', border: '1px solid #f0f0f0' }} />
+                                            ) : (
+                                                <Avatar shape="square" size={40} icon={<PictureOutlined />} style={{ backgroundColor: '#f5f5f5', color: '#bfbfbf' }} />
+                                            )
+                                        }
                                         title={<Text strong>{prod.nombre}</Text>}
                                         description={
                                             <Space size="small">

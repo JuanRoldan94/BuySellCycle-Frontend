@@ -6,6 +6,7 @@ import type { Producto } from '../types/producto.type';
 import { getMarcas } from '../../Marca/services/marca.service';
 import { getJerarquiaCategorias } from '../../Categoria/services/categoria.service';
 import { getDepositos } from '../../Deposito/services/deposito.service';
+import { ImageUpload } from '../../../shared/components/ImageUpload';
 
 interface ProductoFormModalProps {
   isOpen: boolean;
@@ -79,7 +80,8 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
         categoriaNivel2Id: Number(values.categoriaNivel2Id),
         costoNeto: Number(values.costoNeto),
         utilidadPorcentaje: Number(values.utilidadPorcentaje),
-        porcentajeDescuentoContado: Number(values.porcentajeDescuentoContado)
+        porcentajeDescuentoContado: Number(values.porcentajeDescuentoContado),
+        rutaImagenStorage: values.rutaImagenStorage || null,
       };
 
       if (values.depositoId) {
@@ -145,6 +147,18 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
               rules={[{ required: true, message: 'Requerido' }]}
             >
               <Input placeholder="Ej: Bicicleta Mountain Bike R29" autoFocus />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              name="rutaImagenStorage"
+              label="Imagen del Producto (Firebase Cloud Storage)"
+              extra="Formato optimizado a WebP automáticamente al subirlo al emulador de Storage."
+            >
+              <ImageUpload carpeta="productos" label="Subir imagen a Firebase Storage" />
             </Form.Item>
           </Col>
         </Row>

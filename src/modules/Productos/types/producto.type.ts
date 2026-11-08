@@ -8,6 +8,7 @@ export interface Producto {
     stockTotal: number;
     marcaId: number;
     categoriaNivel2Id: number;
+    rutaImagenStorage?: string | null;
     archivado: boolean;
 
     marca?: { id: number; nombre: string };

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Tabs, Table, Button, Space, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Typography } from 'antd';
+import { Tabs, Table, Button, Space, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Typography, Image, Avatar, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CreditCardOutlined, BankOutlined, PercentageOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ImageUpload } from '../../../shared/components/ImageUpload';
 
 import { 
   getBancos, createBanco, updateBanco, deleteBanco,
@@ -132,15 +133,42 @@ const TabTarjetas = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', width: 80 },
+    {
+      title: 'Logo',
+      dataIndex: 'rutaImagenStorage',
+      key: 'imagen',
+      width: 70,
+      align: 'center' as const,
+      render: (url: string) => url ? (
+        <Image
+          src={url}
+          alt="Logo"
+          width={40}
+          height={26}
+          style={{ objectFit: 'contain', borderRadius: 4, background: '#fff', border: '1px solid #f0f0f0', padding: 2 }}
+          fallback="https://placehold.co/40x26?text=Card"
+        />
+      ) : (
+        <Avatar shape="square" size={28} icon={<CreditCardOutlined />} style={{ backgroundColor: '#f0f5ff', color: '#1890ff' }} />
+      )
+    },
+    { title: 'ID', dataIndex: 'id', width: 70 },
     { title: 'Nombre', dataIndex: 'nombre' },
-    { title: 'Tipo', dataIndex: 'tipo' },
+    { 
+      title: 'Tipo', 
+      dataIndex: 'tipo',
+      render: (tipo: string) => (
+        <Tag color={tipo === 'CREDITO' ? 'gold' : 'blue'}>
+          {tipo}
+        </Tag>
+      )
+    },
     {
       title: 'Acciones',
-      width: 150,
+      width: 130,
       render: (_: any, record: any) => (
         <Space>
-          <Button type="text" icon={<EditOutlined />} onClick={() => abrirModal(record)} />
+          <Button type="text" icon={<EditOutlined style={{ color: '#faad14' }} />} onClick={() => abrirModal(record)} />
           <Popconfirm title="¿Eliminar tarjeta?" onConfirm={() => mutationEliminar.mutate(record.id)}>
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -163,15 +191,29 @@ const TabTarjetas = () => {
         onCancel={() => setIsModalOpen(false)}
         confirmLoading={mutationGuardar.isPending}
       >
-        <Form form={form} layout="vertical" onFinish={(values) => mutationGuardar.mutate(values)}>
-          <Form.Item name="nombre" label="Nombre" rules={[{ required: true }]}>
+        <Form 
+          form={form} 
+          layout="vertical" 
+          onFinish={(values) => mutationGuardar.mutate({
+            ...values,
+            rutaImagenStorage: values.rutaImagenStorage || null,
+          })}
+        >
+          <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Ingrese el nombre de la tarjeta' }]}>
             <Input placeholder="Ej: Visa" />
           </Form.Item>
-          <Form.Item name="tipo" label="Tipo de Tarjeta" rules={[{ required: true }]}>
+          <Form.Item name="tipo" label="Tipo de Tarjeta" rules={[{ required: true, message: 'Seleccione el tipo' }]}>
             <Select placeholder="Seleccione tipo">
               <Option value="CREDITO">Crédito</Option>
               <Option value="DEBITO">Débito</Option>
             </Select>
+          </Form.Item>
+          <Form.Item 
+            name="rutaImagenStorage" 
+            label="Logo de la Tarjeta (Firebase Cloud Storage)"
+            extra="Suba el logo oficial de la tarjeta (Visa, Mastercard, etc.). Se almacena en Firebase Storage."
+          >
+            <ImageUpload carpeta="tarjetas" label="Subir logo de tarjeta" />
           </Form.Item>
         </Form>
       </Modal>
@@ -221,7 +263,27 @@ const TabPlanes = () => {
   };
 
   const columns = [
-    { title: 'Tarjeta', key: 'tarjeta', render: (r: any) => r.tarjeta?.nombre },
+    { 
+      title: 'Tarjeta', 
+      key: 'tarjeta', 
+      render: (r: any) => (
+        <Space size="small">
+          {r.tarjeta?.rutaImagenStorage ? (
+            <Image
+              src={r.tarjeta.rutaImagenStorage}
+              alt={r.tarjeta.nombre}
+              width={30}
+              height={20}
+              preview={false}
+              style={{ objectFit: 'contain' }}
+            />
+          ) : (
+            <CreditCardOutlined style={{ color: '#1890ff' }} />
+          )}
+          <span>{r.tarjeta?.nombre}</span>
+        </Space>
+      )
+    },
     { title: 'Banco', key: 'banco', render: (r: any) => r.banco?.nombre },
     { title: 'Cuotas', dataIndex: 'cantidadCuotas', align: 'center' as const },
     { title: 'Interés (%)', dataIndex: 'tasaFinanciacion', align: 'right' as const, render: (v: number) => `${v}%` },

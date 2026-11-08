@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Radio, Select, Card, Typography } from 'antd';
+import { Radio, Select, Card, Typography, Space } from 'antd';
 import { CreditCardOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getPlanesParaVenta } from '../services/ventas.service';
@@ -10,7 +10,7 @@ interface PlanBackend {
     id: number;
     tasaFinanciacion: number;
     cantidadCuotas: number;
-    tarjeta: { id: number; nombre: string };
+    tarjeta: { id: number; nombre: string; rutaImagenStorage?: string };
     banco: { id: number; nombre: string };
 }
 
@@ -90,7 +90,23 @@ export const PanelFinanciacion = () => {
                                 setBancoIdLoc(undefined);
                                 setMetodoPago('PLAN', null);
                             }}
-                            options={tarjetasUnicas.map(t => ({ value: t.id, label: t.nombre }))}
+                            options={tarjetasUnicas.map(t => ({
+                                value: t.id,
+                                label: (
+                                    <Space size="small">
+                                        {t.rutaImagenStorage ? (
+                                            <img
+                                                src={t.rutaImagenStorage}
+                                                alt={t.nombre}
+                                                style={{ width: 22, height: 15, objectFit: 'contain', verticalAlign: 'middle' }}
+                                            />
+                                        ) : (
+                                            <CreditCardOutlined style={{ color: '#1890ff' }} />
+                                        )}
+                                        <span>{t.nombre}</span>
+                                    </Space>
+                                )
+                            }))}
                         />
                     </div>
 
