@@ -23,7 +23,7 @@ export const ProductoView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteProducto,
     onSuccess: () => {
-      message.success('Producto archivado correctamente');
+      message.success('Producto eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['productos'] });
     },
     onError: (error: any) => {
@@ -90,7 +90,7 @@ export const ProductoView: React.FC = () => {
           
           <Popconfirm
             title="¿Eliminar producto?"
-            description={`¿Archivar "${record.nombre}"?`}
+            description={`¿Desea eliminar "${record.nombre}"?`}
             onConfirm={() => deleteMutation.mutate(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"

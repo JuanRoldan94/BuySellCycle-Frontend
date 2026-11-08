@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getVentas, actualizarEstadoVenta } from '../services/ventas.service';
 
 interface VentaHistorial {
     id: number;
@@ -35,11 +36,8 @@ export const HistorialVentas = () => {
 
     const cargarVentas = async () => {
         try {
-            const res = await fetch('http://localhost:3000/ventas');
-            if (res.ok) {
-                const data = await res.json();
-                setVentas(data);
-            }
+            const data = await getVentas();
+            setVentas(data);
         } catch (error) {
             console.error('Error al cargar el historial:', error);
         } finally {
@@ -90,21 +88,12 @@ export const HistorialVentas = () => {
         setActualizando(true);
 
         try {
-            const res = await fetch(`http://localhost:3000/ventas/${ventaActiva.id}/estado`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: nuevoEstado }),
-            });
-
-            if (res.ok) {
-                await cargarVentas();
-                cerrarModal();
-            } else {
-                const error = await res.json();
-                alert(`Error: ${error.message}`);
-            }
-        } catch (error) {
+            await actualizarEstadoVenta(ventaActiva.id, nuevoEstado);
+            await cargarVentas();
+            cerrarModal();
+        } catch (error: any) {
             console.error('Error al actualizar', error);
+            alert(`Error: ${error.response?.data?.message || error.message}`);
         } finally {
             setActualizando(false);
         }
@@ -216,7 +205,7 @@ export const HistorialVentas = () => {
                                                         ✏️
                                                     </button>
                                                     <a
-                                                        href={`http://localhost:3000/pdf/venta/${v.id}`}
+                                                        href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/pdf/venta/${v.id}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="btn btn-sm btn-outline-danger"

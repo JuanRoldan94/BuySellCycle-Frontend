@@ -22,7 +22,7 @@ export const SucursalView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteSucursal,
     onSuccess: () => {
-      message.success('Sucursal archivada correctamente');
+      message.success('Sucursal eliminada correctamente');
       queryClient.invalidateQueries({ queryKey: ['sucursales'] });
     },
     onError: (error: any) => {
@@ -47,7 +47,7 @@ export const SucursalView: React.FC = () => {
           <Button type="text" style={{ color: '#1890ff' }} icon={<EditOutlined />} onClick={() => handleOpenEdit(record)} />
           <Popconfirm
             title="¿Eliminar sucursal?"
-            description={`¿Archivar "${record.nombre}"?`}
+            description={`¿Desea eliminar "${record.nombre}"?`}
             onConfirm={() => deleteMutation.mutate(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"

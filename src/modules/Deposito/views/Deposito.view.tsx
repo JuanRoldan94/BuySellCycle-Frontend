@@ -31,11 +31,11 @@ export const DepositoView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteDeposito,
     onSuccess: () => {
-      message.success('Depósito archivado correctamente');
+      message.success('Depósito eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['depositos'] });
     },
     onError: (error: any) => {
-      message.error(error.response?.data?.message || 'Error al archivar el depósito');
+      message.error(error.response?.data?.message || 'Error al eliminar el depósito');
     }
   });
 
@@ -71,7 +71,7 @@ export const DepositoView: React.FC = () => {
           <Button type="text" style={{ color: '#1890ff' }} icon={<EditOutlined />} onClick={() => handleOpenEdit(record)} />
           <Popconfirm
             title="¿Eliminar depósito?"
-            description={`¿Archivar "${record.nombre}"?`}
+            description={`¿Desea eliminar "${record.nombre}"?`}
             onConfirm={() => deleteMutation.mutate(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"

@@ -35,7 +35,7 @@ const TabBancos = () => {
   const mutationEliminar = useMutation({
     mutationFn: deleteBanco,
     onSuccess: () => {
-      message.success('Banco archivado/eliminado correctamente');
+      message.success('Banco eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['bancos'] });
     }
   });
@@ -115,7 +115,7 @@ const TabTarjetas = () => {
   const mutationEliminar = useMutation({
     mutationFn: deleteTarjeta,
     onSuccess: () => {
-      message.success('Tarjeta archivada/eliminada correctamente');
+      message.success('Tarjeta eliminada correctamente');
       queryClient.invalidateQueries({ queryKey: ['tarjetas'] });
     }
   });
@@ -204,7 +204,7 @@ const TabPlanes = () => {
   const mutationEliminar = useMutation({
     mutationFn: deletePlan,
     onSuccess: () => {
-      message.success('Plan archivado/eliminado correctamente');
+      message.success('Plan eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['planes'] });
     }
   });

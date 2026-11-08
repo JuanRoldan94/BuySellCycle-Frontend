@@ -96,8 +96,8 @@ export const DepositoFormModal: React.FC<DepositoFormModalProps> = ({ isOpen, on
                 <Row gutter={16}>
                     <Col span={12}>
                     <Form.Item name="provinciaId" label="Provincia" rules={[{ required: true, message: 'Requerido' }]}>
-                        <Select loading={loadingProv} placeholder="Seleccione provincia">
-                        {provincias?.map((p: any) => (
+                        <Select loading={loadingProv} placeholder="Seleccione provincia" showSearch optionFilterProp="children">
+                        {[...(provincias || [])].sort((a: any, b: any) => a.nombre.localeCompare(b.nombre)).map((p: any) => (
                             <Select.Option key={p.id} value={p.id}>{p.nombre}</Select.Option>
                         ))}
                         </Select>
@@ -105,9 +105,10 @@ export const DepositoFormModal: React.FC<DepositoFormModalProps> = ({ isOpen, on
                     </Col>
                     <Col span={12}>
                     <Form.Item name="localidadId" label="Localidad" rules={[{ required: true, message: 'Requerido' }]}>
-                        <Select loading={loadingLoc} placeholder="Seleccione localidad" disabled={!provinciaSeleccionada}>
-                        {localidades
+                        <Select loading={loadingLoc} placeholder="Seleccione localidad" disabled={!provinciaSeleccionada} showSearch optionFilterProp="children">
+                        {[...(localidades || [])]
                             ?.filter((l: any) => l.provinciaId === provinciaSeleccionada)
+                            .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre))
                             .map((l: any) => (
                             <Select.Option key={l.id} value={l.id}>{l.nombre}</Select.Option>
                             ))}

@@ -22,7 +22,7 @@ export const ClienteView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteCliente,
     onSuccess: () => {
-      message.success('Cliente archivado correctamente');
+      message.success('Cliente eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
     },
     onError: (error: any) => {
@@ -46,7 +46,7 @@ export const ClienteView: React.FC = () => {
           <Button type="text" style={{ color: '#1890ff' }} icon={<EditOutlined />} onClick={() => handleOpenEdit(record)} />
           <Popconfirm
             title="¿Eliminar cliente?"
-            description={`¿Archivar a "${record.nombre} ${record.apellido}"?`}
+            description={`¿Desea eliminar a "${record.nombre} ${record.apellido}"?`}
             onConfirm={() => deleteMutation.mutate(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"

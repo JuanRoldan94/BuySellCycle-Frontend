@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useVentaStore } from '../store/useVentaStore';
+import { getProductosParaVenta } from '../services/ventas.service';
 
 interface ProductoBackend {
     id: number;
@@ -23,11 +24,8 @@ export const BuscadorProductos = () => {
     useEffect(() => {
         const fetchProductos = async () => {
             try {
-                const res = await fetch('http://localhost:3000/productos');
-                if (res.ok) {
-                    const data = await res.json();
-                    setProductos(data);
-                }
+                const data = await getProductosParaVenta();
+                setProductos(data);
             } catch (error) {
                 console.error('Error al cargar productos:', error);
             }

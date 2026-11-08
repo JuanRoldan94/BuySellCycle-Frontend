@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useVentaStore } from '../store/useVentaStore';
+import { getPlanesParaVenta } from '../services/ventas.service';
 
 interface PlanBackend {
     id: number;
@@ -22,11 +23,8 @@ export const PanelFinanciacion = () => {
     useEffect(() => {
         const fetchPlanes = async () => {
             try {
-                const res = await fetch('http://localhost:3000/planes');
-                if (res.ok) {
-                    const data: PlanBackend[] = await res.json();
-                    setPlanes(data);
-                }
+                const data: PlanBackend[] = await getPlanesParaVenta();
+                setPlanes(data);
             } catch (error) {
                 console.error('Error al cargar planes:', error);
             }

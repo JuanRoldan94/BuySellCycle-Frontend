@@ -22,7 +22,7 @@ export const UsuarioView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteUsuario,
     onSuccess: () => {
-      message.success('Usuario archivado correctamente');
+      message.success('Usuario eliminado correctamente');
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
     },
     onError: (error: any) => {
@@ -64,7 +64,7 @@ export const UsuarioView: React.FC = () => {
           <Button type="text" style={{ color: '#1890ff' }} icon={<EditOutlined />} onClick={() => handleOpenEdit(record)} />
           <Popconfirm
             title="¿Eliminar usuario?"
-            description={`¿Archivar a "${record.nombre}"?`}
+            description={`¿Desea eliminar a "${record.nombre}"?`}
             onConfirm={() => deleteMutation.mutate(record.id)}
             okText="Sí, eliminar"
             cancelText="Cancelar"

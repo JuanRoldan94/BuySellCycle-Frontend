@@ -23,7 +23,7 @@ export const MarcaView: React.FC = () => {
     const deleteMutation = useMutation({
         mutationFn: deleteMarca,
         onSuccess: () => {
-            message.success('Marca archivada correctamente');
+            message.success('Marca eliminada correctamente');
             queryClient.invalidateQueries({ queryKey: ['marcas'] });
         },
         onError: (error: any) => {
@@ -64,10 +64,10 @@ export const MarcaView: React.FC = () => {
                     />
 
                     <Popconfirm
-                        title="Eliminar Marca?"
-                        description={`Estas seguro de archivar "${record.nombre}"?`}
+                        title="¿Eliminar marca?"
+                        description={`¿Estás seguro de eliminar "${record.nombre}"?`}
                         onConfirm={() => deleteMutation.mutate(record.id)}
-                        okText="Si, eliminar"
+                        okText="Sí, eliminar"
                         cancelText="Cancelar"
                     >
                         <Button type="text" danger icon={<DeleteOutlined />} />

@@ -6,6 +6,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProductos } from '../../Productos/services/producto.service';
 import { getClientes } from '../../Cliente/services/cliente.service';
 import { createPDF, sendMailPresupuesto } from '../services/presupuesto.service';
+import { api } from '../../../shared/api';
 import { MailOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -20,11 +21,7 @@ interface ItemCarrito {
   subtotal: number;
 }
 
-const getPlanes = async () => {
-  const res = await fetch('http://localhost:3000/planes');
-  if (!res.ok) throw new Error('Error al cargar los planes');
-  return res.json();
-};
+const getPlanes = async () => (await api.get('/planes')).data;
 
 export const PresupuestoView: React.FC = () => {
   const [formAdd] = Form.useForm();

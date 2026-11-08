@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useVentaStore } from '../store/useVentaStore';
+import { getClientesParaVenta } from '../services/ventas.service';
 
 interface ClienteBackend {
     id: number;
@@ -28,18 +29,15 @@ export const SelectorCliente = () => {
         setError(null);
 
         try {
-            const res = await fetch('http://localhost:3000/clientes');
-            if (res.ok) {
-                const clientes: ClienteBackend[] = await res.json();
-                const coincidencia = clientes.find(c => c.dni === dniInput.trim());
+            const clientes: ClienteBackend[] = await getClientesParaVenta();
+            const coincidencia = clientes.find(c => c.dni === dniInput.trim());
 
-                if (coincidencia) {
-                    setClienteEncontrado(coincidencia);
-                    setClienteIdStore(coincidencia.id);
-                } else {
-                    setError('No se encontró ningún cliente con ese DNI.');
-                    setClienteIdStore(null);
-                }
+            if (coincidencia) {
+                setClienteEncontrado(coincidencia);
+                setClienteIdStore(coincidencia.id);
+            } else {
+                setError('No se encontró ningún cliente con ese DNI.');
+                setClienteIdStore(null);
             }
         } catch (err) {
             console.error('Error al buscar cliente:', err);

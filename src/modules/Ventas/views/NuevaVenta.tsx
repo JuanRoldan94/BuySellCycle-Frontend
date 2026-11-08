@@ -4,6 +4,7 @@ import { BuscadorProductos } from '../components/BuscadorProductos';
 import { SelectorCliente } from '../components/SelectorCliente';
 import { PanelSucursalEntrega } from '../components/PanelSucursalEntrega';
 import { PanelFinanciacion } from '../components/PanelFinanciacion';
+import { registrarVenta } from '../services/ventas.service';
 
 export const NuevaVenta = () => {
     const navigate = useNavigate();
@@ -42,26 +43,13 @@ export const NuevaVenta = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:3000/ventas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                alert(`¡Venta #${data.id} registrada con éxito!`);
-                vaciarCarrito();
-                // Acá podríamos disparar la descarga del PDF:
-                // window.open(`http://localhost:3000/pdf/venta/${data.id}`, '_blank');
-                navigate('/ventas/historial');
-
-            } else {
-                const error = await response.json();
-                alert(`Error: ${error.message}`);
-            }
-        } catch (error) {
+            const data = await registrarVenta(payload as any);
+            alert(`¡Venta #${data.id} registrada con éxito!`);
+            vaciarCarrito();
+            navigate('/ventas/historial');
+        } catch (error: any) {
             console.error('Error al registrar venta:', error);
+            alert(`Error: ${error.response?.data?.message || error.message}`);
         }
     };
 

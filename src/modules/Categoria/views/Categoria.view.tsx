@@ -28,7 +28,7 @@ export const CategoriaView: React.FC = () => {
     const deleteN1Mutation = useMutation({
         mutationFn: deleteCategoriaNivel1,
         onSuccess: () => {
-            message.success('Categoría archivada correctamente');
+            message.success('Categoría eliminada correctamente');
             queryClient.invalidateQueries({ queryKey: ['categorias-jerarquia'] });
         },
             onError: (error: any) => {
@@ -39,7 +39,7 @@ export const CategoriaView: React.FC = () => {
     const deleteN2Mutation = useMutation({
         mutationFn: deleteCategoriaNivel2,
         onSuccess: () => {
-            message.success('Sub-categoría archivada correctamente');
+            message.success('Sub-categoría eliminada correctamente');
             queryClient.invalidateQueries({ queryKey: ['categorias-jerarquia'] });
         },
         onError: (error: any) => {

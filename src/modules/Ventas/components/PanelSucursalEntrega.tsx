@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useVentaStore } from '../store/useVentaStore';
+import { getSucursalesParaVenta } from '../services/ventas.service';
 
 interface SucursalBackend {
     id: number;
@@ -19,14 +20,11 @@ export const PanelSucursalEntrega = () => {
     useEffect(() => {
         const fetchSucursales = async () => {
             try {
-                const res = await fetch('http://localhost:3000/sucursales');
-                if (res.ok) {
-                    const data: SucursalBackend[] = await res.json();
-                    setSucursales(data);
+                const data: SucursalBackend[] = await getSucursalesParaVenta();
+                setSucursales(data);
 
-                    if (data.length > 0 && !sucursalId) {
-                        setSucursal(data[0].id);
-                    }
+                if (data.length > 0 && !sucursalId) {
+                    setSucursal(data[0].id);
                 }
             } catch (error) {
                 console.error('Error al cargar sucursales:', error);

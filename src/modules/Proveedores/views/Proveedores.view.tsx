@@ -22,11 +22,11 @@ export const ProveedoresView: React.FC = () => {
     const deleteMutation = useMutation({
         mutationFn: deleteProveedor,
         onSuccess: () => {
-            message.success('Proveedor archivado correctamente');
+            message.success('Proveedor eliminado correctamente');
             queryClient.invalidateQueries({ queryKey: ['proveedores'] });
         },
         onError: (error: any) => {
-            message.error(error.response?.data?.message || 'Error al archivar el proveedor');
+            message.error(error.response?.data?.message || 'Error al eliminar el proveedor');
         }
     });
 
@@ -66,7 +66,7 @@ export const ProveedoresView: React.FC = () => {
                     />
                     <Popconfirm
                         title="¿Eliminar proveedor?"
-                        description={`¿Archivar a "${record.razonSocial}"?`}
+                        description={`¿Desea eliminar a "${record.razonSocial}"?`}
                         onConfirm={() => deleteMutation.mutate(record.id)}
                         okText="Sí, eliminar"
                         cancelText="Cancelar"
