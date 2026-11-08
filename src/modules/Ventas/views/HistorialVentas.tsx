@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
     ShoppingCartOutlined, PlusOutlined, EyeOutlined, EditOutlined,
-    FilePdfOutlined, MailOutlined, SearchOutlined
+    FilePdfOutlined, MailOutlined, SearchOutlined, ShopOutlined, CarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getVentas, actualizarEstadoVenta, reenviarMailVenta } from '../services/ventas.service';
@@ -46,6 +46,8 @@ export const HistorialVentas = () => {
     const navigate = useNavigate();
     const [ventas, setVentas] = useState<VentaHistorial[]>([]);
     const [busqueda, setBusqueda] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
+    const [filtroEntrega, setFiltroEntrega] = useState<string>('TODOS');
     const [cargando, setCargando] = useState(true);
 
     const [modalAbierto, setModalAbierto] = useState(false);
@@ -101,9 +103,39 @@ export const HistorialVentas = () => {
         });
     };
 
+    const getOpcionesEstado = (modoEntrega?: string) => {
+        if (modoEntrega === 'RETIRO_SUCURSAL') {
+            return [
+                { value: 'EN_PREPARACION', label: 'En Preparación' },
+                { value: 'DISPONIBLE_PARA_RETIRAR', label: 'Disponible para Retirar en Sucursal' },
+                { value: 'ENTREGADO', label: 'Entregado (Retirado por Cliente)' },
+                { value: 'CANCELADO', label: 'Cancelar Venta (Devuelve Stock)' },
+            ];
+        }
+        if (modoEntrega === 'ENTREGA_DOMICILIO') {
+            return [
+                { value: 'EN_PREPARACION', label: 'En Preparación' },
+                { value: 'EN_CAMINO', label: 'En Camino a Domicilio' },
+                { value: 'ENTREGADO', label: 'Entregado en Domicilio' },
+                { value: 'CANCELADO', label: 'Cancelar Venta (Devuelve Stock)' },
+            ];
+        }
+        return [
+            { value: 'EN_PREPARACION', label: '📦 En Preparación' },
+            { value: 'DISPONIBLE_PARA_RETIRAR', label: '🏪 Disponible para Retirar' },
+            { value: 'EN_CAMINO', label: 'En Camino' },
+            { value: 'ENTREGADO', label: 'Entregado' },
+            { value: 'CANCELADO', label: 'Cancelar Venta (Devuelve Stock)' },
+        ];
+    };
+
     const abrirModal = (venta: VentaHistorial) => {
         if (venta.estado === 'CANCELADO') {
             message.warning('Una venta cancelada no se puede modificar.');
+            return;
+        }
+        if (venta.estado === 'ENTREGADO') {
+            message.info('Esta venta ya fue entregada y finalizada.');
             return;
         }
         setVentaActiva(venta);
@@ -136,7 +168,7 @@ export const HistorialVentas = () => {
 
         if (nuevoEstado === 'CANCELADO') {
             if (!motivoCancelacion.trim()) {
-                message.error('Debe especificar un motivo de cancelación.');
+                message.error('Debe especificar un motivo de cancelación obligatorio.');
                 return;
             }
         }
@@ -162,13 +194,17 @@ export const HistorialVentas = () => {
 
     const ventasFiltradas = ventas.filter((v) => {
         const termino = busqueda.toLowerCase().trim();
-        if (!termino) return true;
-        const nombreCompleto = `${v.cliente?.nombre || ''} ${v.cliente?.apellido || ''}`.toLowerCase();
-        return (
+        const coincideTermino = !termino || (
             v.id.toString().includes(termino) ||
             v.cliente?.dni?.includes(termino) ||
-            nombreCompleto.includes(termino)
+            `${v.cliente?.nombre || ''} ${v.cliente?.apellido || ''}`.toLowerCase().includes(termino) ||
+            v.sucursal?.nombre?.toLowerCase().includes(termino)
         );
+
+        const coincideEstado = filtroEstado === 'TODOS' || v.estado === filtroEstado;
+        const coincideEntrega = filtroEntrega === 'TODOS' || v.modoEntrega === filtroEntrega;
+
+        return coincideTermino && coincideEstado && coincideEntrega;
     });
 
     const columns: ColumnsType<VentaHistorial> = [
@@ -176,7 +212,7 @@ export const HistorialVentas = () => {
             title: 'Nro',
             dataIndex: 'id',
             key: 'id',
-            width: 90,
+            width: 85,
             render: (id: number) => (
                 <Text strong style={{ color: '#1890ff' }}>
                     V-{String(id).padStart(4, '0')}
@@ -187,7 +223,7 @@ export const HistorialVentas = () => {
             title: 'Fecha',
             dataIndex: 'fechaCreacion',
             key: 'fechaCreacion',
-            width: 110,
+            width: 105,
             render: (f: string) => new Date(f).toLocaleDateString('es-AR'),
         },
         {
@@ -198,22 +234,57 @@ export const HistorialVentas = () => {
                     <Text strong style={{ display: 'block' }}>
                         {v.cliente?.nombre} {v.cliente?.apellido}
                     </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        DNI: {v.cliente?.dni}
+                    </Text>
                 </div>
             ),
         },
         {
-            title: 'Sucursal',
-            dataIndex: ['sucursal', 'nombre'],
-            key: 'sucursal',
+            title: 'Entrega',
+            key: 'entrega',
+            width: 175,
+            render: (_, v) => (
+                <div>
+                    <Tag
+                        color={v.modoEntrega === 'RETIRO_SUCURSAL' ? 'cyan' : 'blue'}
+                        icon={v.modoEntrega === 'RETIRO_SUCURSAL' ? <ShopOutlined /> : <CarOutlined />}
+                        style={{ fontWeight: 600 }}
+                    >
+                        {v.modoEntrega === 'RETIRO_SUCURSAL' ? 'En Sucursal' : 'A Domicilio'}
+                    </Tag>
+                    {v.modoEntrega === 'RETIRO_SUCURSAL' ? (
+                        <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
+                            {v.sucursal?.nombre}
+                        </div>
+                    ) : (
+                        v.direccionEntregaTexto && (
+                            <Tooltip title={v.direccionEntregaTexto}>
+                                <div style={{
+                                    fontSize: 11,
+                                    color: '#8c8c8c',
+                                    maxWidth: 150,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    marginTop: 2
+                                }}>
+                                    📍 {v.direccionEntregaTexto}
+                                </div>
+                            </Tooltip>
+                        )
+                    )}
+                </div>
+            ),
         },
         {
             title: 'Pago',
             dataIndex: 'modoPago',
             key: 'modoPago',
-            width: 130,
+            width: 120,
             render: (modo: string) => (
                 <Tag color={modo === 'CONTADO' ? 'success' : 'processing'}>
-                    {modo === 'CONTADO' ? '💵 Contado' : '💳 Financiado'}
+                    {modo === 'CONTADO' ? '💵 Contado' : '💳 Plan'}
                 </Tag>
             ),
         },
@@ -222,7 +293,7 @@ export const HistorialVentas = () => {
             dataIndex: 'montoTotal',
             key: 'montoTotal',
             align: 'right',
-            width: 130,
+            width: 125,
             render: (total: number) => (
                 <Text strong style={{ fontSize: 14 }}>
                     ${Number(total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
@@ -232,7 +303,7 @@ export const HistorialVentas = () => {
         {
             title: 'Estado',
             key: 'estado',
-            width: 180,
+            width: 190,
             render: (_, v) => {
                 const info = ESTADOS_INFO[v.estado] || { color: 'default', label: v.estado };
                 return (
@@ -246,7 +317,7 @@ export const HistorialVentas = () => {
                                     fontSize: 11,
                                     color: '#ff4d4f',
                                     marginTop: 4,
-                                    maxWidth: 160,
+                                    maxWidth: 165,
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap'
@@ -263,7 +334,7 @@ export const HistorialVentas = () => {
             title: 'Acciones',
             key: 'acciones',
             align: 'center',
-            width: 170,
+            width: 160,
             render: (_, v) => (
                 <Space size="small">
                     <Tooltip title="Ver detalle de productos">
@@ -273,11 +344,17 @@ export const HistorialVentas = () => {
                             onClick={() => abrirModalDetalle(v)}
                         />
                     </Tooltip>
-                    <Tooltip title={v.estado === 'CANCELADO' ? 'Venta cancelada' : 'Cambiar estado'}>
+                    <Tooltip title={
+                        v.estado === 'CANCELADO'
+                            ? 'Venta cancelada (no modificable)'
+                            : v.estado === 'ENTREGADO'
+                                ? 'Venta ya entregada y finalizada'
+                                : 'Cambiar estado'
+                    }>
                         <Button
                             type="text"
-                            icon={<EditOutlined style={{ color: v.estado === 'CANCELADO' ? '#d9d9d9' : '#faad14' }} />}
-                            disabled={v.estado === 'CANCELADO'}
+                            icon={<EditOutlined style={{ color: (v.estado === 'CANCELADO' || v.estado === 'ENTREGADO') ? '#d9d9d9' : '#faad14' }} />}
+                            disabled={v.estado === 'CANCELADO' || v.estado === 'ENTREGADO'}
                             onClick={() => abrirModal(v)}
                         />
                     </Tooltip>
@@ -311,7 +388,7 @@ export const HistorialVentas = () => {
                             <ShoppingCartOutlined style={{ fontSize: 26, color: '#1890ff' }} />
                             <div>
                                 <Title level={3} style={{ margin: 0 }}>Historial de Ventas</Title>
-                                <Text type="secondary">Consulte, administre estados y envíe comprobantes de las ventas registradas</Text>
+                                <Text type="secondary">Consulte, filtre por estado y modalidad, y gestione el ciclo de entrega</Text>
                             </div>
                         </Space>
                     </Col>
@@ -329,16 +406,44 @@ export const HistorialVentas = () => {
             </Card>
 
             <Card>
-                <div style={{ marginBottom: 16 }}>
-                    <Input
-                        prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-                        placeholder="Buscar por Nro de venta, DNI o nombre del cliente..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        allowClear
-                        style={{ maxWidth: 380 }}
-                    />
-                </div>
+                <Row gutter={[16, 16]} style={{ marginBottom: 16 }} align="middle">
+                    <Col xs={24} md={10}>
+                        <Input
+                            prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                            placeholder="Buscar por Nro de venta, DNI o cliente..."
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            allowClear
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} md={7}>
+                        <Select
+                            style={{ width: '100%' }}
+                            value={filtroEstado}
+                            onChange={setFiltroEstado}
+                            options={[
+                                { value: 'TODOS', label: '📌 Todos los Estados' },
+                                { value: 'EN_PREPARACION', label: '📦 En Preparación' },
+                                { value: 'DISPONIBLE_PARA_RETIRAR', label: '🏪 Disponible para Retirar' },
+                                { value: 'EN_CAMINO', label: '🚚 En Camino' },
+                                { value: 'ENTREGADO', label: '✅ Entregado' },
+                                { value: 'CANCELADO', label: '❌ Cancelado' },
+                            ]}
+                        />
+                    </Col>
+                    <Col xs={24} sm={12} md={7}>
+                        <Select
+                            style={{ width: '100%' }}
+                            value={filtroEntrega}
+                            onChange={setFiltroEntrega}
+                            options={[
+                                { value: 'TODOS', label: '📦 Todas las Modalidades' },
+                                { value: 'RETIRO_SUCURSAL', label: '🏢 Retiro en Sucursal' },
+                                { value: 'ENTREGA_DOMICILIO', label: '🚚 Entrega a Domicilio' },
+                            ]}
+                        />
+                    </Col>
+                </Row>
 
                 <Table
                     columns={columns}
@@ -369,6 +474,26 @@ export const HistorialVentas = () => {
                             <Descriptions.Item label="Cliente">
                                 {ventaActiva.cliente?.nombre} {ventaActiva.cliente?.apellido} (DNI: {ventaActiva.cliente?.dni})
                             </Descriptions.Item>
+                            <Descriptions.Item label="Modalidad de Entrega">
+                                <Tag
+                                    color={ventaActiva.modoEntrega === 'RETIRO_SUCURSAL' ? 'cyan' : 'blue'}
+                                    icon={ventaActiva.modoEntrega === 'RETIRO_SUCURSAL' ? <ShopOutlined /> : <CarOutlined />}
+                                    style={{ fontWeight: 600 }}
+                                >
+                                    {ventaActiva.modoEntrega === 'RETIRO_SUCURSAL' ? 'Retiro en Sucursal' : 'Entrega a Domicilio'}
+                                </Tag>
+                                {ventaActiva.modoEntrega === 'RETIRO_SUCURSAL' ? (
+                                    <Text type="secondary" style={{ marginLeft: 6 }}>
+                                        ({ventaActiva.sucursal?.nombre})
+                                    </Text>
+                                ) : (
+                                    ventaActiva.direccionEntregaTexto && (
+                                        <Text type="secondary" style={{ marginLeft: 6 }}>
+                                            ({ventaActiva.direccionEntregaTexto})
+                                        </Text>
+                                    )
+                                )}
+                            </Descriptions.Item>
                             <Descriptions.Item label="Total Venta">
                                 <strong>${Number(ventaActiva.montoTotal || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
                             </Descriptions.Item>
@@ -380,15 +505,29 @@ export const HistorialVentas = () => {
                                 style={{ width: '100%' }}
                                 value={nuevoEstado}
                                 onChange={setNuevoEstado}
-                                options={[
-                                    { value: 'EN_PREPARACION', label: 'En Preparación' },
-                                    { value: 'DISPONIBLE_PARA_RETIRAR', label: 'Disponible para Retirar' },
-                                    { value: 'EN_CAMINO', label: 'En Camino' },
-                                    { value: 'ENTREGADO', label: 'Entregado' },
-                                    { value: 'CANCELADO', label: 'Cancelar Venta (Devuelve Stock)' },
-                                ]}
+                                options={getOpcionesEstado(ventaActiva.modoEntrega)}
                             />
                         </div>
+
+                        {nuevoEstado === 'DISPONIBLE_PARA_RETIRAR' && (
+                            <Alert
+                                type="info"
+                                showIcon
+                                message="Listo para Retiro en Sucursal"
+                                description={`El pedido queda preparado y disponible para que el cliente lo retire en "${ventaActiva.sucursal?.nombre}". Se notificará automáticamente al correo del cliente.`}
+                                style={{ marginBottom: 12 }}
+                            />
+                        )}
+
+                        {nuevoEstado === 'EN_CAMINO' && (
+                            <Alert
+                                type="info"
+                                showIcon
+                                message="Despacho en Camino a Domicilio"
+                                description={`El pedido sale en transporte hacia el domicilio del cliente (${ventaActiva.direccionEntregaTexto || 'dirección registrada'}). Se notificará automáticamente al cliente.`}
+                                style={{ marginBottom: 12 }}
+                            />
+                        )}
 
                         {nuevoEstado === 'CANCELADO' && (
                             <div style={{ marginTop: 16 }}>
@@ -448,6 +587,25 @@ export const HistorialVentas = () => {
                                     {ventaDetalle.modoPago}
                                 </Tag>
                             </Descriptions.Item>
+                            <Descriptions.Item label="Modalidad de Entrega">
+                                <Tag
+                                    color={ventaDetalle.modoEntrega === 'RETIRO_SUCURSAL' ? 'cyan' : 'blue'}
+                                    icon={ventaDetalle.modoEntrega === 'RETIRO_SUCURSAL' ? <ShopOutlined /> : <CarOutlined />}
+                                    style={{ fontWeight: 600 }}
+                                >
+                                    {ventaDetalle.modoEntrega === 'RETIRO_SUCURSAL' ? 'Retiro en Sucursal' : 'Entrega a Domicilio'}
+                                </Tag>
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Estado Actual">
+                                <Tag color={ESTADOS_INFO[ventaDetalle.estado]?.color || 'default'} style={{ fontWeight: 600 }}>
+                                    {ESTADOS_INFO[ventaDetalle.estado]?.label || ventaDetalle.estado}
+                                </Tag>
+                            </Descriptions.Item>
+                            {ventaDetalle.modoEntrega === 'ENTREGA_DOMICILIO' && ventaDetalle.direccionEntregaTexto && (
+                                <Descriptions.Item label="Dirección de Envío" span={2}>
+                                    📍 {ventaDetalle.direccionEntregaTexto}
+                                </Descriptions.Item>
+                            )}
                         </Descriptions>
 
                         {ventaDetalle.estado === 'CANCELADO' && (

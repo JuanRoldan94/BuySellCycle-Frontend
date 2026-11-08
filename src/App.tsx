@@ -14,6 +14,7 @@ import { NuevaVenta } from './modules/Ventas/views/NuevaVenta';
 import { HistorialVentas } from './modules/Ventas/views/HistorialVentas';
 import { FinanciacionView } from './modules/Financiacion/views/Financiacion.view';
 import { DashboardView } from './modules/Dashboard/views/Dashboard.view';
+import { ErroresView } from './modules/Errores/views/Errores.view';
 import { NotFoundView } from './shared/components/NotFoundView';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 
         {/* --- ADMINISTRACIÓN --- */}
         <Route path="sucursales" element={<SucursalView />} />
+        <Route path="errores" element={<ErroresView />} />
 
         <Route path="/financiacion" element={<FinanciacionView />} />
 

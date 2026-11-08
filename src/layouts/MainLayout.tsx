@@ -12,7 +12,8 @@ import {
   ShoppingCartOutlined,
   SettingOutlined,
   CreditCardOutlined,
-  DashboardOutlined
+  DashboardOutlined,
+  BugOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -71,6 +72,7 @@ export const MainLayout: React.FC = () => {
       label: 'Administración',
       children: [
         { key: '/sucursales', icon: <ShopOutlined />, label: 'Sucursales' },
+        { key: '/errores', icon: <BugOutlined />, label: 'Logs de Errores' },
       ],
     },
     { key: '/financiacion', icon: <CreditCardOutlined />, label: 'Financiacion' },

@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import 'antd/dist/reset.css';
 import './index.css';
 import App from './App.tsx';
+import { initFrontendErrorLogging } from './shared/errorLogger.ts';
+
+// Inicializar captura global de errores no controlados en frontend
+initFrontendErrorLogging();
 
 const queryClient = new QueryClient({
   defaultOptions: {

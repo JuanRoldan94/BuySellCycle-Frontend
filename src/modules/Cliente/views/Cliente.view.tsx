@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Typography, Popconfirm, message } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Typography, Popconfirm, message, Tooltip } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClientes, deleteCliente } from '../services/cliente.service';
 import type { ColumnsType } from 'antd/es/table';
 import type { Cliente } from '../types/cliente.type';
 import { ClienteFormModal } from '../components/ClienteFormModal';
+import { DireccionesClienteModal } from '../components/DireccionesClienteModal';
 
 const { Title } = Typography;
 
@@ -13,6 +14,7 @@ export const ClienteView: React.FC = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clienteToEdit, setClienteToEdit] = useState<Cliente | null>(null);
+  const [clienteDirecciones, setClienteDirecciones] = useState<Cliente | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['clientes'],
@@ -38,12 +40,42 @@ export const ClienteView: React.FC = () => {
     { title: 'DNI / CUIT', dataIndex: 'dni', key: 'dni' },  
     { title: 'Email', dataIndex: 'email', key: 'email' },
     {
+      title: 'Dirección Principal',
+      key: 'direccionPrincipal',
+      render: (_, record) => {
+        const principal = record.direccionEntregas?.find(d => d.principal) || record.direccionEntregas?.[0];
+        return principal ? (
+          <Space>
+            <EnvironmentOutlined style={{ color: '#52c41a' }} />
+            <span>{principal.direccion}</span>
+          </Space>
+        ) : (
+          <span style={{ color: '#bfbfbf' }}>Sin direcciones</span>
+        );
+      }
+    },
+    {
       title: 'Acciones',
       key: 'acciones',
-      width: 120,
+      width: 150,
       render: (_, record) => (
-        <Space size="middle">
-          <Button type="text" style={{ color: '#1890ff' }} icon={<EditOutlined />} onClick={() => handleOpenEdit(record)} />
+        <Space size="small">
+          <Tooltip title={`Gestionar Direcciones (${record.direccionEntregas?.length || 0})`}>
+            <Button 
+              type="text" 
+              style={{ color: '#52c41a' }} 
+              icon={<EnvironmentOutlined />} 
+              onClick={() => setClienteDirecciones(record)} 
+            />
+          </Tooltip>
+          <Tooltip title="Editar Cliente">
+            <Button 
+              type="text" 
+              style={{ color: '#1890ff' }} 
+              icon={<EditOutlined />} 
+              onClick={() => handleOpenEdit(record)} 
+            />
+          </Tooltip>
           <Popconfirm
             title="¿Eliminar cliente?"
             description={`¿Desea eliminar a "${record.nombre} ${record.apellido}"?`}
@@ -51,7 +83,9 @@ export const ClienteView: React.FC = () => {
             okText="Sí, eliminar"
             cancelText="Cancelar"
           >
-            <Button type="text" danger icon={<DeleteOutlined />} />
+            <Tooltip title="Eliminar Cliente">
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
@@ -68,6 +102,11 @@ export const ClienteView: React.FC = () => {
       </div>
       <Table columns={columns} dataSource={data} rowKey="id" loading={isLoading} bordered />
       <ClienteFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} clienteToEdit={clienteToEdit} />
+      <DireccionesClienteModal 
+        isOpen={!!clienteDirecciones} 
+        onClose={() => setClienteDirecciones(null)} 
+        cliente={clienteDirecciones} 
+      />
     </div>
   );
 };
