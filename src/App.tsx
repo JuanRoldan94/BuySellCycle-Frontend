@@ -13,14 +13,13 @@ import { ProveedoresView } from './modules/Proveedores/views/Proveedores.view';
 import { NuevaVenta } from './modules/Ventas/views/NuevaVenta';
 import { HistorialVentas } from './modules/Ventas/views/HistorialVentas';
 import { FinanciacionView } from './modules/Financiacion/views/Financiacion.view';
-
-const DashboardMock = () => <h2>Bienvenido al Dashboard</h2>;
+import { DashboardView } from './modules/Dashboard/views/Dashboard.view';
 
 function App() {
   return (
     <Routes>
       <Route element={<MainLayout />}>
-        <Route index element={<DashboardMock />} />
+        <Route index element={<DashboardView />} />
 
         {/* --- PERSONAS --- */}
         <Route path="clientes" element={<ClienteView />} />

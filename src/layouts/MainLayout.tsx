@@ -11,7 +11,8 @@ import {
   AppstoreOutlined,
   ShoppingCartOutlined,
   SettingOutlined,
-  CreditCardOutlined
+  CreditCardOutlined,
+  DashboardOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -31,6 +32,7 @@ export const MainLayout: React.FC = () => {
   } = theme.useToken();
 
   const menuItems = [
+    { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
     {
       key: 'personas',
       icon: <TeamOutlined />,
