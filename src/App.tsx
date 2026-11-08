@@ -14,6 +14,7 @@ import { NuevaVenta } from './modules/Ventas/views/NuevaVenta';
 import { HistorialVentas } from './modules/Ventas/views/HistorialVentas';
 import { FinanciacionView } from './modules/Financiacion/views/Financiacion.view';
 import { DashboardView } from './modules/Dashboard/views/Dashboard.view';
+import { NotFoundView } from './shared/components/NotFoundView';
 
 function App() {
   return (
@@ -45,11 +46,10 @@ function App() {
         <Route path="/financiacion" element={<FinanciacionView />} />
 
         {/* 404 */}
-        <Route path="*" element={<h2>Error 404: Página no encontrada</h2>} />
+        <Route path="*" element={<NotFoundView />} />
       </Route>
     </Routes>
   );
 }
 
 export default App;
-

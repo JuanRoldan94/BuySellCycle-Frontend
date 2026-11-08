@@ -7,7 +7,7 @@ import {
   getBancos, createBanco, updateBanco, deleteBanco,
   getTarjetas, createTarjeta, updateTarjeta, deleteTarjeta,
   getPlanes, createPlan, updatePlan, deletePlan
-} from '../services/financiacion.service';
+} from '../services/Financiacion.service';
 
 const { Title } = Typography;
 const { Option } = Select;

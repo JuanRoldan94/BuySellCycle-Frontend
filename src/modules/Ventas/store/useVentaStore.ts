@@ -19,8 +19,8 @@ interface VentaState {
     direccionEntregaTexto: string,
 
     // Acciones
-    setCliente: (id: number) => void;
-    setSucursal: (id: number) => void;
+    setCliente: (id: number | null) => void;
+    setSucursal: (id: number | null) => void;
     setMetodoPago: (modo: 'CONTADO' | 'PLAN', planId?: number | null, tasa?: number) => void;
     setModoEntrega: (modo: 'RETIRO_SUCURSAL' | 'ENTREGA_DOMICILIO') => void;
     setDireccionEntregaTexto: (direccion: string) => void;

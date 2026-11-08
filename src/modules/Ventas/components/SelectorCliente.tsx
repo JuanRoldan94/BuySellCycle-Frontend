@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
+import { Input, Button, Card, Space, Typography, message } from 'antd';
+import { UserOutlined, SearchOutlined, CheckCircleOutlined, CloseOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getClientesParaVenta } from '../services/ventas.service';
+
+const { Text } = Typography;
 
 interface ClienteBackend {
     id: number;
     nombre: string;
     apellido: string;
     dni: string;
+    email?: string;
 }
 
 export const SelectorCliente = () => {
     const [dniInput, setDniInput] = useState('');
     const [clienteEncontrado, setClienteEncontrado] = useState<ClienteBackend | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [buscando, setBuscando] = useState(false);
 
     const setClienteIdStore = useVentaStore((state) => state.setCliente);
     const clienteIdActual = useVentaStore((state) => state.clienteId);
@@ -25,23 +30,29 @@ export const SelectorCliente = () => {
     }, [clienteIdActual]);
 
     const handleBuscar = async () => {
-        if (!dniInput.trim()) return;
-        setError(null);
+        if (!dniInput.trim()) {
+            message.warning('Ingrese un número de DNI para buscar.');
+            return;
+        }
 
+        setBuscando(true);
         try {
             const clientes: ClienteBackend[] = await getClientesParaVenta();
-            const coincidencia = clientes.find(c => c.dni === dniInput.trim());
+            const coincidencia = clientes.find(c => c.dni.trim() === dniInput.trim());
 
             if (coincidencia) {
                 setClienteEncontrado(coincidencia);
                 setClienteIdStore(coincidencia.id);
+                message.success(`Cliente seleccionado: ${coincidencia.nombre} ${coincidencia.apellido}`);
             } else {
-                setError('No se encontró ningún cliente con ese DNI.');
+                message.error('No se encontró ningún cliente registrado con ese DNI.');
                 setClienteIdStore(null);
             }
         } catch (err) {
             console.error('Error al buscar cliente:', err);
-            setError('Error de conexión con el servidor.');
+            message.error('Error de conexión al buscar el cliente.');
+        } finally {
+            setBuscando(false);
         }
     };
 
@@ -49,46 +60,66 @@ export const SelectorCliente = () => {
         setClienteEncontrado(null);
         setDniInput('');
         setClienteIdStore(null);
-        setError(null);
     };
 
     return (
-        <div className="mb-4">
-            <label className="form-label fw-bold text-secondary">Cliente</label>
+        <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                <UserOutlined style={{ color: '#1890ff', marginRight: 6 }} />
+                <Text strong>Cliente:</Text>
+            </div>
 
             {!clienteEncontrado ? (
-                <div>
-                    <div className="input-group">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Ingrese el DNI..."
-                            value={dniInput}
-                            onChange={(e) => setDniInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleBuscar()}
-                        />
-                        <button className="btn btn-secondary" onClick={handleBuscar}>
-                            Buscar
-                        </button>
-                    </div>
-                    {error && <small className="text-danger mt-1 d-block">{error}</small>}
-                </div>
-            ) : (
-                <div className="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
-                    <div>
-                        <span className="d-block fw-bold text-dark">
-                            {clienteEncontrado.nombre} {clienteEncontrado.apellido}
-                        </span>
-                        <small className="text-muted">DNI: {clienteEncontrado.dni}</small>
-                    </div>
-                    <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={handleLimpiar}
-                        title="Cambiar de cliente"
+                <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                        placeholder="Ingrese DNI del cliente..."
+                        value={dniInput}
+                        onChange={(e) => setDniInput(e.target.value)}
+                        onPressEnter={handleBuscar}
+                        allowClear
+                    />
+                    <Button
+                        type="primary"
+                        icon={<SearchOutlined />}
+                        onClick={handleBuscar}
+                        loading={buscando}
                     >
-                        ✕
-                    </button>
-                </div>
+                        Buscar
+                    </Button>
+                </Space.Compact>
+            ) : (
+                <Card
+                    size="small"
+                    style={{
+                        background: '#f6ffed',
+                        borderColor: '#b7eb8f',
+                        borderRadius: 6,
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <Space align="center">
+                                <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                                <Text strong style={{ fontSize: 14 }}>
+                                    {clienteEncontrado.nombre} {clienteEncontrado.apellido}
+                                </Text>
+                            </Space>
+                            <div style={{ fontSize: 12, color: '#595959', marginLeft: 20 }}>
+                                DNI: <strong>{clienteEncontrado.dni}</strong>
+                            </div>
+                        </div>
+                        <Button
+                            size="small"
+                            type="text"
+                            danger
+                            icon={<CloseOutlined />}
+                            onClick={handleLimpiar}
+                            title="Cambiar cliente"
+                        >
+                            Cambiar
+                        </Button>
+                    </div>
+                </Card>
             )}
         </div>
     );

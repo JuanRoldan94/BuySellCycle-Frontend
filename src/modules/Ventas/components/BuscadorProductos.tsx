@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { Input, List, Button, Tag, Typography, message, Space } from 'antd';
+import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getProductosParaVenta } from '../services/ventas.service';
+
+const { Text } = Typography;
 
 interface ProductoBackend {
     id: number;
@@ -14,7 +18,6 @@ interface ProductoBackend {
 export const BuscadorProductos = () => {
     const [productos, setProductos] = useState<ProductoBackend[]>([]);
     const [busqueda, setBusqueda] = useState('');
-
     const [mostrarMenu, setMostrarMenu] = useState(false);
     const contenedorRef = useRef<HTMLDivElement>(null);
 
@@ -41,21 +44,20 @@ export const BuscadorProductos = () => {
         };
 
         document.addEventListener('mousedown', handleClickFuera);
-
         return () => document.removeEventListener('mousedown', handleClickFuera);
     }, []);
 
     const productosFiltrados = productos
         .filter((p) => p.estado === 'DISPONIBLE' && p.stockTotal > 0)
         .filter((p) => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
-        .slice(0, 5);
+        .slice(0, 6);
 
     const handleAgregar = (producto: ProductoBackend) => {
         const itemEnCarrito = detalles.find((d) => d.productoId === producto.id);
         const cantidadReservada = itemEnCarrito ? itemEnCarrito.cantidad : 0;
 
         if (cantidadReservada >= producto.stockTotal) {
-            alert(`¡Límite de stock! Solo hay ${producto.stockTotal} unidades disponibles de ${producto.nombre}.`);
+            message.warning(`¡Límite de stock! Solo hay ${producto.stockTotal} unidades disponibles de ${producto.nombre}.`);
             return;
         }
 
@@ -67,51 +69,85 @@ export const BuscadorProductos = () => {
             stockMaximo: producto.stockTotal,
         });
 
+        message.success(`"${producto.nombre}" agregado al carrito`);
         setMostrarMenu(false);
         setBusqueda('');
     };
 
     return (
-        <div className="mb-4 position-relative" ref={contenedorRef}>
-            <div className="input-group">
-                <span className="input-group-text bg-light">🔍</span>
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Buscar bicicleta o repuesto por nombre..."
-                    value={busqueda}
-                    onChange={(e) => {
-                        setBusqueda(e.target.value);
-                        setMostrarMenu(true);
-                    }}
-                    onClick={() => setMostrarMenu(true)} 
-                    onFocus={() => setMostrarMenu(true)}
-                />
-            </div>
+        <div style={{ position: 'relative', marginBottom: 16 }} ref={contenedorRef}>
+            <Input
+                size="large"
+                prefix={<SearchOutlined style={{ color: '#1890ff' }} />}
+                placeholder="Buscar bicicleta o repuesto por nombre para agregar..."
+                value={busqueda}
+                onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setMostrarMenu(true);
+                }}
+                onClick={() => setMostrarMenu(true)}
+                onFocus={() => setMostrarMenu(true)}
+                allowClear
+            />
 
             {mostrarMenu && busqueda.trim() !== '' && (
-                <ul className="list-group shadow-sm position-absolute z-3 w-100 mt-1">
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                        backgroundColor: '#fff',
+                        borderRadius: 8,
+                        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
+                        marginTop: 4,
+                        border: '1px solid #f0f0f0',
+                        overflow: 'hidden',
+                        maxHeight: 320,
+                        overflowY: 'auto'
+                    }}
+                >
                     {productosFiltrados.length === 0 ? (
-                        <li className="list-group-item text-muted">No se encontraron productos con stock.</li>
+                        <div style={{ padding: 16, textAlign: 'center', color: '#8c8c8c' }}>
+                            No se encontraron productos disponibles con stock.
+                        </div>
                     ) : (
-                        productosFiltrados.map((prod) => (
-                            <li key={prod.id} className="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
-                                <div>
-                                    <span className="fw-bold d-block">{prod.nombre}</span>
-                                    <small className="text-muted">
-                                        Stock disponible: {prod.stockTotal} | Precio Lista: ${prod.precioLista}
-                                    </small>
-                                </div>
-                                <button
-                                    className="btn btn-primary btn-sm px-3 rounded-pill"
-                                    onClick={() => handleAgregar(prod)}
+                        <List
+                            dataSource={productosFiltrados}
+                            renderItem={(prod) => (
+                                <List.Item
+                                    style={{
+                                        padding: '12px 16px',
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.2s',
+                                    }}
+                                    actions={[
+                                        <Button
+                                            key="add"
+                                            type="primary"
+                                            size="small"
+                                            icon={<PlusOutlined />}
+                                            onClick={() => handleAgregar(prod)}
+                                        >
+                                            Agregar
+                                        </Button>
+                                    ]}
                                 >
-                                    + Agregar
-                                </button>
-                            </li>
-                        ))
+                                    <List.Item.Meta
+                                        title={<Text strong>{prod.nombre}</Text>}
+                                        description={
+                                            <Space size="small">
+                                                <Tag color="green">Stock: {prod.stockTotal}</Tag>
+                                                <Tag color="blue">Precio: ${Number(prod.precioLista).toLocaleString('es-AR')}</Tag>
+                                            </Space>
+                                        }
+                                    />
+                                </List.Item>
+                            )}
+                        />
                     )}
-                </ul>
+                </div>
             )}
         </div>
     );

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Radio, Select, Card, Typography } from 'antd';
+import { CreditCardOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getPlanesParaVenta } from '../services/ventas.service';
+
+const { Text } = Typography;
 
 interface PlanBackend {
     id: number;
@@ -13,8 +17,8 @@ interface PlanBackend {
 export const PanelFinanciacion = () => {
     const [planes, setPlanes] = useState<PlanBackend[]>([]);
 
-    const [tarjetaIdLoc, setTarjetaIdLoc] = useState<number | ''>('');
-    const [bancoIdLoc, setBancoIdLoc] = useState<number | ''>('');
+    const [tarjetaIdLoc, setTarjetaIdLoc] = useState<number | undefined>(undefined);
+    const [bancoIdLoc, setBancoIdLoc] = useState<number | undefined>(undefined);
 
     const modoPago = useVentaStore((state) => state.modoPago);
     const planId = useVentaStore((state) => state.planId);
@@ -39,101 +43,95 @@ export const PanelFinanciacion = () => {
     const handleCambioModo = (modo: 'CONTADO' | 'PLAN') => {
         setMetodoPago(modo, null);
         if (modo === 'CONTADO') {
-            setTarjetaIdLoc('');
-            setBancoIdLoc('');
+            setTarjetaIdLoc(undefined);
+            setBancoIdLoc(undefined);
         }
     };
 
     return (
-        <div className="mb-4">
-            <label className="form-label fw-bold text-secondary">Método de Pago</label>
-            <div className="d-flex gap-3 mb-3">
-                <div className="form-check">
-                    <input
-                        className="form-check-input cursor-pointer"
-                        type="radio"
-                        name="pago"
-                        id="contado"
-                        checked={modoPago === 'CONTADO'}
-                        onChange={() => handleCambioModo('CONTADO')}
-                    />
-                    <label className="form-check-label cursor-pointer" htmlFor="contado">
-                        💵 Contado / Débito
-                    </label>
-                </div>
-                <div className="form-check">
-                    <input
-                        className="form-check-input cursor-pointer"
-                        type="radio"
-                        name="pago"
-                        id="plan"
-                        checked={modoPago === 'PLAN'}
-                        onChange={() => handleCambioModo('PLAN')}
-                    />
-                    <label className="form-check-label cursor-pointer" htmlFor="plan">
-                        💳 Tarjeta de Crédito (Plan)
-                    </label>
-                </div>
+        <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                <CreditCardOutlined style={{ color: '#1890ff', marginRight: 6 }} />
+                <Text strong>Modalidad de Pago:</Text>
             </div>
 
+            <Radio.Group
+                style={{ width: '100%', marginBottom: 12 }}
+                value={modoPago}
+                onChange={(e) => handleCambioModo(e.target.value)}
+            >
+                <Radio.Button value="CONTADO" style={{ width: '50%', textAlign: 'center' }}>
+                    💵 Contado
+                </Radio.Button>
+                <Radio.Button value="PLAN" style={{ width: '50%', textAlign: 'center' }}>
+                    💳 Financiado
+                </Radio.Button>
+            </Radio.Group>
 
             {modoPago === 'PLAN' && (
-                <div className="p-3 bg-light border rounded">
-                    <div className="mb-2">
-                        <label className="form-label small">Tarjeta</label>
-                        <select
-                            className="form-select form-select-sm"
+                <Card
+                    size="small"
+                    style={{
+                        background: '#fafafa',
+                        borderColor: '#d9d9d9',
+                        borderRadius: 6,
+                    }}
+                >
+                    <div style={{ marginBottom: 10 }}>
+                        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                            1. Tarjeta:
+                        </Text>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Seleccione tarjeta..."
                             value={tarjetaIdLoc}
-                            onChange={(e) => {
-                                setTarjetaIdLoc(Number(e.target.value));
-                                setBancoIdLoc('');
+                            onChange={(val) => {
+                                setTarjetaIdLoc(val);
+                                setBancoIdLoc(undefined);
                                 setMetodoPago('PLAN', null);
                             }}
-                        >
-                            <option value="" disabled>1. Seleccione Tarjeta...</option>
-                            {tarjetasUnicas.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
-                        </select>
+                            options={tarjetasUnicas.map(t => ({ value: t.id, label: t.nombre }))}
+                        />
                     </div>
 
-                    <div className="mb-2">
-                        <label className="form-label small">Banco</label>
-                        <select
-                            className="form-select form-select-sm"
+                    <div style={{ marginBottom: 10 }}>
+                        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                            2. Banco Emisor:
+                        </Text>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Seleccione banco..."
                             value={bancoIdLoc}
-                            onChange={(e) => {
-                                setBancoIdLoc(Number(e.target.value));
+                            disabled={!tarjetaIdLoc}
+                            onChange={(val) => {
+                                setBancoIdLoc(val);
                                 setMetodoPago('PLAN', null);
                             }}
-                            disabled={!tarjetaIdLoc}
-                        >
-                            <option value="" disabled>2. Seleccione Banco...</option>
-                            {bancosDisponibles.map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
-                        </select>
+                            options={bancosDisponibles.map(b => ({ value: b.id, label: b.nombre }))}
+                        />
                     </div>
 
                     <div>
-                        <label className="form-label small">Cuotas y Recargo</label>
-                        <select
-                            className="form-select form-select-sm border-primary"
-                            value={planId || ''}
-                            onChange={(e) => {
-                                const idSeleccionado = Number(e.target.value);
+                        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                            3. Plan de Cuotas:
+                        </Text>
+                        <Select
+                            style={{ width: '100%' }}
+                            placeholder="Seleccione cantidad de cuotas..."
+                            value={planId || undefined}
+                            disabled={!bancoIdLoc}
+                            onChange={(idSeleccionado) => {
                                 const planElegido = cuotasDisponibles.find(p => p.id === idSeleccionado);
                                 const tasa = planElegido ? Number(planElegido.tasaFinanciacion) : 0;
-
                                 setMetodoPago('PLAN', idSeleccionado, tasa);
                             }}
-                            disabled={!bancoIdLoc}
-                        >
-                            <option value="" disabled>3. Seleccione Plan...</option>
-                            {cuotasDisponibles.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.cantidadCuotas} cuotas (Interés: {p.tasaFinanciacion}%)
-                                </option>
-                            ))}
-                        </select>
+                            options={cuotasDisponibles.map(p => ({
+                                value: p.id,
+                                label: `${p.cantidadCuotas} cuotas fijas (${Number(p.tasaFinanciacion) > 0 ? `+${p.tasaFinanciacion}% interés` : 'Sin interés'})`
+                            }))}
+                        />
                     </div>
-                </div>
+                </Card>
             )}
         </div>
     );

@@ -17,8 +17,11 @@ export const getVentas = async () => (await api.get('/ventas')).data;
 
 export const registrarVenta = async (datos: RegistrarVentaDto) => (await api.post('/ventas', datos)).data;
 
-export const actualizarEstadoVenta = async (id: number, estado: string) => 
-    (await api.patch(`/ventas/${id}/estado`, { estado })).data;
+export const actualizarEstadoVenta = async (id: number, estado: string, motivoCancelacion?: string) => 
+    (await api.patch(`/ventas/${id}/estado`, { 
+        estado,
+        ...(motivoCancelacion ? { motivoCancelacion } : {}),
+    })).data;
 
 export const getProductosParaVenta = async () => (await api.get('/productos')).data;
 

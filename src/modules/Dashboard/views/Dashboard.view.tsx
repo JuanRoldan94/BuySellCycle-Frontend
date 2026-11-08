@@ -10,7 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell,
 } from 'recharts';
 import { getDashboardStats } from '../services/dashboard.service';
 
@@ -163,7 +163,7 @@ export const DashboardView: React.FC = () => {
                   <XAxis dataKey="mes" />
                   <YAxis />
                   <Tooltip
-                    formatter={(value: number) => [`$${value.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 'Ingresos']}
+                    formatter={(value: any) => [`$${Number(value || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, 'Ingresos']}
                   />
                   <Bar dataKey="total" fill="#1890ff" radius={[4, 4, 0, 0]} name="Ingresos ($)" />
                 </BarChart>

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Select, Radio, Input, Typography } from 'antd';
+import { ShopOutlined, CarOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useVentaStore } from '../store/useVentaStore';
 import { getSucursalesParaVenta } from '../services/ventas.service';
+
+const { Text } = Typography;
 
 interface SucursalBackend {
     id: number;
@@ -34,64 +38,50 @@ export const PanelSucursalEntrega = () => {
     }, [sucursalId, setSucursal]);
 
     return (
-        <div className="mb-4">
-            <label className="form-label fw-bold text-secondary">Sucursal de Origen</label>
-            <select
-                className="form-select mb-3"
-                value={sucursalId || ''}
-                onChange={(e) => setSucursal(Number(e.target.value))}
-            >
-                <option value="" disabled>Seleccione una sucursal...</option>
-                {sucursales.map(suc => (
-                    <option key={suc.id} value={suc.id}>
-                        {suc.nombre}
-                    </option>
-                ))}
-            </select>
-
-            <label className="form-label fw-bold text-secondary">Método de Entrega</label>
-            <div className="d-flex gap-3">
-                <div className="form-check">
-                    <input
-                        className="form-check-input cursor-pointer"
-                        type="radio"
-                        name="entrega"
-                        id="retiro"
-                        checked={modoEntrega === 'RETIRO_SUCURSAL'}
-                        onChange={() => setModoEntrega('RETIRO_SUCURSAL')}
-                    />
-                    <label className="form-check-label cursor-pointer" htmlFor="retiro">
-                        🏢 Retiro en Sucursal
-                    </label>
+        <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                    <ShopOutlined style={{ color: '#1890ff', marginRight: 6 }} />
+                    <Text strong>Sucursal de Origen:</Text>
                 </div>
-                <div className="form-check">
-                    <input
-                        className="form-check-input cursor-pointer"
-                        type="radio"
-                        name="entrega"
-                        id="envio"
-                        checked={modoEntrega === 'ENTREGA_DOMICILIO'}
-                        onChange={() => setModoEntrega('ENTREGA_DOMICILIO')}
-                    />
-                    <label className="form-check-label cursor-pointer" htmlFor="envio">
-                        🚚 Envío a Domicilio
-                    </label>
-                </div>
+                <Select
+                    style={{ width: '100%' }}
+                    placeholder="Seleccione sucursal..."
+                    value={sucursalId || undefined}
+                    onChange={(val) => setSucursal(val)}
+                    options={sucursales.map(s => ({ value: s.id, label: s.nombre }))}
+                />
             </div>
-            {modoEntrega === 'ENTREGA_DOMICILIO' && (
-                <div className="mt-3 p-2 bg-white border rounded shadow-sm">
-                    <label className="form-label small fw-bold text-primary mb-1">
-                        📍 Dirección exacta de entrega
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        placeholder="Ej: Bv. Santa Fe 123, Rafaela"
-                        value={direccionEntregaTexto}
-                        onChange={(e) => setDireccionEntregaTexto(e.target.value)}
-                    />
+
+            <div>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                    <CarOutlined style={{ color: '#1890ff', marginRight: 6 }} />
+                    <Text strong>Método de Entrega:</Text>
                 </div>
-            )}
+                <Radio.Group
+                    style={{ width: '100%', marginBottom: 8 }}
+                    value={modoEntrega}
+                    onChange={(e) => setModoEntrega(e.target.value)}
+                >
+                    <Radio.Button value="RETIRO_SUCURSAL" style={{ width: '50%', textAlign: 'center' }}>
+                        🏢 Retiro Sucursal
+                    </Radio.Button>
+                    <Radio.Button value="ENTREGA_DOMICILIO" style={{ width: '50%', textAlign: 'center' }}>
+                        🚚 Domicilio
+                    </Radio.Button>
+                </Radio.Group>
+
+                {modoEntrega === 'ENTREGA_DOMICILIO' && (
+                    <div style={{ marginTop: 8 }}>
+                        <Input
+                            prefix={<EnvironmentOutlined style={{ color: '#1890ff' }} />}
+                            placeholder="Dirección exacta de entrega (ej: Bv. Santa Fe 123)..."
+                            value={direccionEntregaTexto}
+                            onChange={(e) => setDireccionEntregaTexto(e.target.value)}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
