@@ -13,9 +13,6 @@ import {
 const { Title } = Typography;
 const { Option } = Select;
 
-// ==========================================
-// 1. PESTAÑA: BANCOS
-// ==========================================
 const TabBancos = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -271,11 +268,12 @@ const TabPlanes = () => {
           {r.tarjeta?.rutaImagenStorage ? (
             <Image
               src={r.tarjeta.rutaImagenStorage}
-              alt={r.tarjeta.nombre}
+              alt={'logo'}
               width={30}
               height={20}
               preview={false}
               style={{ objectFit: 'contain' }}
+              fallback="https://placehold.co/40x26?text=Card"
             />
           ) : (
             <CreditCardOutlined style={{ color: '#1890ff' }} />

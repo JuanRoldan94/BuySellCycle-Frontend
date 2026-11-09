@@ -208,17 +208,7 @@ export const HistorialVentas = () => {
     });
 
     const columns: ColumnsType<VentaHistorial> = [
-        {
-            title: 'Nro',
-            dataIndex: 'id',
-            key: 'id',
-            width: 85,
-            render: (id: number) => (
-                <Text strong style={{ color: '#1890ff' }}>
-                    V-{String(id).padStart(4, '0')}
-                </Text>
-            ),
-        },
+
         {
             title: 'Fecha',
             dataIndex: 'fechaCreacion',
