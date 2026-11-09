@@ -21,7 +21,7 @@ export const ErroresView: React.FC = () => {
   const { data: errores = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['errores', filtroSistema],
     queryFn: () => getErrores(filtroSistema),
-    refetchInterval: 15000, // Refresca automáticamente cada 15 segundos
+    refetchInterval: 15000,
   });
 
   const totalFrontend = errores.filter(e => e.tipoSistema?.toLowerCase() === 'frontend').length;
@@ -136,7 +136,6 @@ export const ErroresView: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1250, margin: '0 auto' }}>
-      {/* Tarjeta de Encabezado */}
       <Card style={{ marginBottom: 20 }}>
         <Row justify="space-between" align="middle" gutter={[16, 16]}>
           <Col>
@@ -144,9 +143,7 @@ export const ErroresView: React.FC = () => {
               <BugOutlined style={{ fontSize: 28, color: '#ff4d4f' }} />
               <div>
                 <Title level={3} style={{ margin: 0 }}>Registro y Auditoría de Errores</Title>
-                <Text type="secondary">
-                  Monitoreo unificado de incidencias y excepciones capturadas en Firestore (Frontend y Backend)
-                </Text>
+      
               </div>
             </Space>
           </Col>
@@ -162,9 +159,7 @@ export const ErroresView: React.FC = () => {
         </Row>
       </Card>
 
-      {/* Contenido Principal */}
       <Card>
-        {/* Barra de Filtros */}
         <Row justify="space-between" align="middle" gutter={[16, 16]} style={{ marginBottom: 20 }}>
           <Col>
             <Space size="middle" wrap>
@@ -201,7 +196,6 @@ export const ErroresView: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Tabla de Errores */}
         <Table
           columns={columns}
           dataSource={erroresFiltrados}
@@ -212,7 +206,6 @@ export const ErroresView: React.FC = () => {
         />
       </Card>
 
-      {/* Modal de Detalle de Error */}
       <Modal
         title={
           <Space>

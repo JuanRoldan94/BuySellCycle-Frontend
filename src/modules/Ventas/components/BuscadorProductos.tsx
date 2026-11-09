@@ -80,7 +80,7 @@ export const BuscadorProductos = () => {
             <Input
                 size="large"
                 prefix={<SearchOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Buscar bicicleta o repuesto por nombre para agregar..."
+                placeholder="Buscar por nombre..."
                 value={busqueda}
                 onChange={(e) => {
                     setBusqueda(e.target.value);
@@ -91,7 +91,7 @@ export const BuscadorProductos = () => {
                 allowClear
             />
 
-            {mostrarMenu && busqueda.trim() !== '' && (
+            {mostrarMenu && (
                 <div
                     style={{
                         position: 'absolute',
